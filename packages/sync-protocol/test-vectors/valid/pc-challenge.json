@@ -1,0 +1,13 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JCHALLENGE",
+  "kind": "pc.challenge",
+  "deviceId": "dev_pc",
+  "runtimeId": "runtime_mac_01",
+  "sentAt": "2026-08-19T08:00:00.000Z",
+  "payload": {
+    "challengeId": "challenge_01JTEST",
+    "nonce": "uQv3-jBWrtq0HAvNoBmW5jmKSlzxgKrvMrdUJRSsNDI",
+    "expiresAt": "2026-08-19T08:00:30.000Z"
+  }
+}

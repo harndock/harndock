@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Harndock Mobile",
+    "slug": "harndock-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "harndock",
+    "icon": "./assets/harndock-logo-indigo-light.png",
+    "splash": {
+      "image": "./assets/harndock-logo-indigo-light.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F8FC"
+    },
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.harndock.mobile"
+    },
+    "android": {
+      "package": "com.harndock.mobile"
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store",
+      "expo-sqlite"
+    ]
+  }
+}

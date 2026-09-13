@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harndock.com/schemas/runtime-manifest-v1.json",
+  "title": "harndock Runtime manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "manifestVersion",
+    "runtimeVersion",
+    "runtimeApi",
+    "target",
+    "archive",
+    "shellCompatibility",
+    "components",
+    "launch",
+    "profile",
+    "productPackages",
+    "control"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "./manifest.schema.json"
+    },
+    "manifestVersion": {
+      "const": 1
+    },
+    "runtimeVersion": {
+      "$ref": "#/$defs/runtimeVersion"
+    },
+    "runtimeApi": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "target": {
+      "enum": [
+        "darwin-aarch64",
+        "darwin-x86_64",
+        "linux-aarch64",
+        "linux-x86_64"
+      ]
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "root"],
+      "properties": {
+        "format": {
+          "const": "tar.zst"
+        },
+        "root": {
+          "const": "harndock-runtime"
+        }
+      }
+    },
+    "shellCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minVersion", "maxVersionExclusive"],
+      "properties": {
+        "minVersion": {
+          "$ref": "#/$defs/semver"
+        },
+        "maxVersionExclusive": {
+          "$ref": "#/$defs/semver"
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "pnpm", "harness"],
+      "properties": {
+        "node": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version"],
+          "properties": {
+            "version": {
+              "$ref": "#/$defs/semver"
+            }
+          }
+        },
+        "pnpm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version"],
+          "properties": {
+            "version": {
+              "$ref": "#/$defs/semver"
+            }
+          }
+        },
+        "harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "commit"],
+          "properties": {
+            "version": {
+              "$ref": "#/$defs/semver"
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        }
+      }
+    },
+    "launch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "packageManagerEntrypoint", "harnessEntrypoint", "cwd"],
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/artifactPath"
+        },
+        "packageManagerEntrypoint": {
+          "$ref": "#/$defs/artifactPath"
+        },
+        "harnessEntrypoint": {
+          "$ref": "#/$defs/artifactPath"
+        },
+        "cwd": {
+          "$ref": "#/$defs/artifactPath"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "bundles"],
+      "properties": {
+        "name": {
+          "const": "desktop"
+        },
+        "bundles": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "@deepseek-ai/dsh-base"
+            },
+            {
+              "const": "@deepseek-ai/dsh-web-app"
+            },
+            {
+              "const": "@harndock/desktop-bundle"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "productPackages": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "role", "path"],
+          "properties": {
+            "name": {
+              "const": "@harndock/desktop-bundle"
+            },
+            "role": {
+              "const": "bundle"
+            },
+            "path": {
+              "$ref": "#/$defs/artifactPath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "role", "path"],
+          "properties": {
+            "name": {
+              "const": "@harndock/client-desktop"
+            },
+            "role": {
+              "const": "client"
+            },
+            "path": {
+              "$ref": "#/$defs/artifactPath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "role", "path"],
+          "properties": {
+            "name": {
+              "const": "@harndock/runtime-bridge"
+            },
+            "role": {
+              "const": "host"
+            },
+            "path": {
+              "$ref": "#/$defs/artifactPath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "role", "path"],
+          "properties": {
+            "name": {
+              "const": "@harndock/remote-sync"
+            },
+            "role": {
+              "const": "host"
+            },
+            "path": {
+              "$ref": "#/$defs/artifactPath"
+            }
+          }
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "transport", "schema"],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "transport": {
+          "const": "unix"
+        },
+        "schema": {
+          "$ref": "#/$defs/artifactPath"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "runtimeVersion": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[1-9][0-9]*$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "artifactPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*\\\\)[A-Za-z0-9@._+/-]+$"
+    }
+  }
+}

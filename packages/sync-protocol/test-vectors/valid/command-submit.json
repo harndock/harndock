@@ -1,0 +1,19 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JCOMMAND",
+  "kind": "command.submit",
+  "accountId": "acct_demo",
+  "deviceId": "dev_phone_a",
+  "runtimeId": "runtime_mac_01",
+  "sessionId": "session_sync",
+  "commandId": "cmd_01JCOMMAND",
+  "baseSeq": 128,
+  "commandType": "session.prompt",
+  "expiresAt": "2026-08-18T09:31:00.000Z",
+  "sentAt": "2026-08-18T09:30:00.000Z",
+  "payload": {
+    "contentBlocks": [
+      { "type": "text", "text": "继续检查" }
+    ]
+  }
+}

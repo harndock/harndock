@@ -1,0 +1,21 @@
+<resources>
+  <color name="splashscreen_background">#0D1018</color>
+  <color name="colorPrimary">#9AA7FF</color>
+  <color name="colorPrimaryDark">#0D1018</color>
+  <color name="harndock_canvas">#0D1018</color>
+  <color name="harndock_surface">#151A30</color>
+  <color name="harndock_surface_muted">#1C2442</color>
+  <color name="harndock_surface_accent">#252E5A</color>
+  <color name="harndock_text">#F4F6FF</color>
+  <color name="harndock_text_secondary">#B1B9D4</color>
+  <color name="harndock_text_tertiary">#7E88A8</color>
+  <color name="harndock_border">#2D365A</color>
+  <color name="harndock_border_strong">#4A5683</color>
+  <color name="harndock_brand">#9AA7FF</color>
+  <color name="harndock_brand_pressed">#7184F2</color>
+  <color name="harndock_brand_soft">#252E5A</color>
+  <color name="harndock_brand_ink">#CBD2FF</color>
+  <color name="harndock_positive_soft">#183A2D</color>
+  <color name="harndock_warning_soft">#3A2F17</color>
+  <color name="harndock_danger_soft">#3C2026</color>
+</resources>

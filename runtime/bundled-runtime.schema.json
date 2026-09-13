@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harndock.com/schemas/bundled-runtime-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "runtimeVersion", "target", "archive"],
+  "properties": {
+    "$schema": {
+      "const": "./bundled-runtime.schema.json"
+    },
+    "runtimeVersion": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[1-9][0-9]*$"
+    },
+    "target": {
+      "enum": [
+        "darwin-aarch64",
+        "darwin-x86_64",
+        "linux-aarch64",
+        "linux-x86_64"
+      ]
+    },
+    "archive": {
+      "type": "string",
+      "pattern": "^harndock-runtime-[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[1-9][0-9]*-(?:darwin-aarch64|darwin-x86_64|linux-aarch64|linux-x86_64)\\.tar\\.zst$"
+    }
+  }
+}

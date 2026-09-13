@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="harndock Gateway Web 与 Desktop 综合交互原型；Mobile 产品 UI 使用 mobile-prototype.html" />
+    <title>harndock Gateway · Gateway Web / Desktop 综合原型</title>
+    <style>
+      :root {
+        --bg: #101416;
+        --surface: #171d20;
+        --surface-2: #1d2528;
+        --surface-3: #253034;
+        --line: #303b3f;
+        --line-soft: #263135;
+        --text: #edf3f1;
+        --muted: #9aa9a7;
+        --faint: #71807e;
+        --green: #79d9a5;
+        --blue: #91c9f5;
+        --orange: #e9b878;
+        --red: #e88a80;
+        --shadow: rgba(0, 0, 0, .28);
+        --radius: 8px;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { min-width: 320px; min-height: 100%; margin: 0; }
+      body {
+        color: var(--text);
+        background: var(--bg);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, textarea { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+      .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+      .topbar {
+        min-height: 62px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--line);
+        background: #12181a;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; min-width: 205px; }
+      .brand-mark {
+        width: 28px; height: 28px; display: grid; place-items: center;
+        border: 1px solid #476353; border-radius: 7px; color: var(--green); background: #1e3027;
+        font-weight: 700;
+      }
+      .brand-name { font-weight: 600; letter-spacing: .01em; }
+      .brand-name span { display: block; color: var(--faint); font-size: 11px; font-weight: 400; }
+      .runtime-status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+      .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(121, 217, 165, .12); }
+      .topbar-spacer { flex: 1; }
+      .top-action, .icon-action {
+        min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: transparent;
+      }
+      .top-action { padding: 0 11px; font-size: 12px; text-decoration: none; }
+      .top-action:hover, .icon-action:hover { color: var(--text); background: var(--surface-2); }
+      .icon-action { width: 36px; padding: 0; font-size: 17px; }
+      .device-count { color: var(--blue); font-variant-numeric: tabular-nums; }
+
+      .mobile-toolbar { display: none; }
+      .workspace { flex: 1; display: grid; grid-template-columns: 286px minmax(0, 1fr) 286px; min-height: 0; }
+
+      .sidebar, .inspector { background: var(--surface); }
+      .sidebar { border-right: 1px solid var(--line); }
+      .inspector { border-left: 1px solid var(--line); }
+      .sidebar-header, .inspector-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid var(--line-soft); }
+      .sidebar-header h1, .inspector-header h2 { margin: 0; font-size: 15px; font-weight: 600; }
+      .count { color: var(--faint); font-size: 12px; }
+      .session-filter { margin: 14px 14px 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: #141a1c; font-size: 12px; }
+      .section-label { margin: 18px 16px 8px; color: var(--faint); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+      .session-list { display: grid; gap: 3px; padding: 0 8px 16px; }
+      .session-row {
+        width: 100%; display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; gap: 9px; padding: 11px 9px;
+        border: 1px solid transparent; border-radius: 6px; color: var(--muted); background: transparent; text-align: left;
+      }
+      .session-row:hover { background: var(--surface-2); }
+      .session-row.active { border-color: #3f5a4a; color: var(--text); background: #203029; }
+      .session-row .row-dot { width: 7px; height: 7px; margin-top: 5px; border-radius: 50%; background: var(--faint); }
+      .session-row.active .row-dot { background: var(--green); }
+      .session-row.warn .row-dot { background: var(--orange); }
+      .session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+      .session-meta { display: block; margin-top: 3px; color: var(--faint); font-size: 11px; }
+      .session-unread { align-self: center; min-width: 20px; color: var(--blue); font-size: 11px; text-align: right; }
+
+      .conversation { min-width: 0; display: flex; flex-direction: column; background: #111719; }
+      .conversation-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 24px; border-bottom: 1px solid var(--line); }
+      .conversation-heading { min-width: 0; }
+      .conversation-heading h2 { overflow: hidden; margin: 0; font-size: 16px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .conversation-heading p { margin: 4px 0 0; color: var(--faint); font-size: 11px; }
+      .conversation-actions { display: flex; align-items: center; gap: 8px; }
+      .control-state { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid #4b5e51; border-radius: 6px; color: var(--green); background: #1b2a23; font-size: 11px; white-space: nowrap; }
+      .control-state[data-owned="false"] { border-color: var(--line); color: var(--orange); background: #28231a; }
+      .control-state i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .event-stream { flex: 1; min-height: 260px; overflow: auto; padding: 24px clamp(16px, 4vw, 52px) 20px; }
+      .event { max-width: 760px; margin: 0 auto 18px; }
+      .event-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--faint); font-size: 11px; }
+      .event-meta strong { color: var(--muted); font-weight: 500; }
+      .event-body { padding: 13px 15px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+      .event.user .event-body { border-color: #365370; background: #1a2834; }
+      .event.assistant .event-body { background: #192123; }
+      .event.system .event-body { padding: 10px 12px; color: var(--muted); background: #171c1e; font-size: 12px; }
+      .event-text { margin: 0; white-space: pre-wrap; }
+      .event-text + .event-text { margin-top: 10px; }
+      .event-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 9px; color: var(--orange); font-size: 11px; }
+      .event-chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .tool-card { border: 1px solid #4a4437; background: #211f1a; }
+      .tool-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+      .tool-name { color: var(--orange); font-size: 12px; font-weight: 500; }
+      .tool-status { color: var(--muted); font-size: 11px; }
+      .tool-code { overflow: auto; margin: 0 0 12px; padding: 10px; border: 1px solid #3a3831; border-radius: 5px; color: #d8c6a9; background: #161716; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6; }
+      .tool-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+      .action-button { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: var(--surface-2); font-size: 12px; }
+      .action-button:hover { color: var(--text); border-color: #52656a; }
+      .action-button.primary { border-color: #4b7a61; color: var(--green); background: #1e3228; }
+      .action-button.danger { border-color: #744943; color: var(--red); background: #30201f; }
+      .action-button:disabled { cursor: default; opacity: .55; }
+      .composer { padding: 12px clamp(16px, 4vw, 52px) 18px; border-top: 1px solid var(--line); background: #12191b; }
+      .composer-inner { max-width: 760px; margin: 0 auto; }
+      .composer-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+      .composer textarea { width: 100%; min-height: 42px; max-height: 110px; resize: vertical; border: 0; color: var(--text); background: transparent; font-size: 13px; line-height: 1.55; }
+      .composer textarea::placeholder { color: var(--faint); }
+      .send-button { align-self: end; min-height: 36px; padding: 0 13px; border: 1px solid #4e7f65; border-radius: 6px; color: #102018; background: var(--green); font-weight: 600; }
+      .send-button:hover { background: #99e6ba; }
+      .composer-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--faint); font-size: 10px; }
+
+      .inspector-section { padding: 18px; border-bottom: 1px solid var(--line-soft); }
+      .inspector-section h3 { margin: 0 0 12px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+      .sync-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 8px 0; color: var(--muted); font-size: 12px; }
+      .sync-row strong { color: var(--text); font-weight: 500; text-align: right; }
+      .sync-row .good { color: var(--green); }
+      .device-list { display: grid; gap: 7px; }
+      .device-row { display: flex; align-items: center; gap: 9px; padding: 8px 0; }
+      .device-avatar { width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--blue); background: #1b2933; font-size: 11px; }
+      .device-copy { min-width: 0; flex: 1; }
+      .device-copy strong { display: block; overflow: hidden; color: var(--text); font-size: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+      .device-copy span { display: block; margin-top: 2px; color: var(--faint); font-size: 10px; }
+      .device-online { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+      .lease-box { padding: 12px; border: 1px solid #3c5547; border-radius: 6px; background: #1b2922; }
+      .lease-box[data-owned="false"] { border-color: #5b4a35; background: #27231c; }
+      .lease-box p { margin: 0 0 11px; color: var(--muted); font-size: 12px; }
+      .lease-box strong { color: var(--text); font-weight: 500; }
+      .lease-button { width: 100%; min-height: 34px; border: 1px solid #4d7c61; border-radius: 6px; color: var(--green); background: transparent; font-size: 12px; }
+      .lease-button:hover { background: #22362b; }
+      .lease-box[data-owned="false"] .lease-button { border-color: #765f3d; color: var(--orange); }
+      .legend { display: grid; gap: 8px; color: var(--faint); font-size: 11px; }
+      .legend-row { display: flex; align-items: center; gap: 8px; }
+      .legend-mark { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+      .legend-mark.blue { background: var(--blue); }
+      .legend-mark.orange { background: var(--orange); }
+
+      .toast { position: fixed; right: 18px; bottom: 18px; z-index: 5; max-width: 330px; padding: 11px 14px; border: 1px solid #4b6255; border-radius: 6px; color: var(--text); background: #1e2d25; box-shadow: 0 16px 36px var(--shadow); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; font-size: 12px; }
+      .toast.visible { opacity: 1; transform: translateY(0); }
+      .connection-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px clamp(16px, 4vw, 52px) 0; padding: 9px 12px; border: 1px solid #765f3d; border-radius: 6px; color: var(--orange); background: #28231a; font-size: 12px; }
+      .connection-banner[hidden] { display: none; }
+      .banner-action { min-height: 28px; padding: 0 9px; border: 1px solid #765f3d; border-radius: 5px; color: var(--orange); background: transparent; font-size: 11px; }
+      .modal { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 18px; background: rgba(5, 8, 9, .72); }
+      .modal[hidden] { display: none; }
+      .modal-card { width: min(540px, 100%); max-height: min(720px, calc(100vh - 36px)); overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 24px 70px var(--shadow); }
+      .modal-header { display: flex; align-items: start; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid var(--line-soft); }
+      .modal-header h2 { margin: 0; font-size: 17px; }
+      .modal-header p { margin: 5px 0 0; color: var(--faint); font-size: 12px; }
+      .modal-body { display: grid; gap: 16px; padding: 20px 22px 22px; }
+      .modal-section { display: grid; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--line-soft); }
+      .modal-section:last-child { padding-bottom: 0; border-bottom: 0; }
+      .modal-section h3 { margin: 0; color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+      .modal-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; }
+      .modal-row + .modal-row { border-top: 1px solid var(--line-soft); }
+      .modal-row strong { display: block; font-size: 13px; font-weight: 500; }
+      .modal-row span { display: block; margin-top: 2px; color: var(--faint); font-size: 11px; }
+      .modal-field { display: grid; gap: 6px; color: var(--muted); font-size: 11px; }
+      .modal-field input { width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: #141a1c; }
+      .origin-preview { display: grid; gap: 5px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #141a1c; }
+      .origin-preview strong { font-size: 12px; font-weight: 500; }
+      .origin-preview span { color: var(--faint); font-size: 11px; }
+      .pairing-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(120px, .6fr); gap: 10px; }
+      .pair-code { padding: 13px; border: 1px dashed #4b7a61; border-radius: 6px; color: var(--green); background: #1b2922; font: 600 20px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; text-align: center; }
+      .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      .token-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 0; }
+      .token-row + .token-row { border-top: 1px solid var(--line-soft); }
+      .token-copy { min-width: 0; }
+      .token-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; }
+      .token-copy span { display: block; margin-top: 3px; color: var(--faint); font-size: 11px; }
+      .status-chip { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+      .status-chip.good { border-color: #42664f; color: var(--green); }
+      .status-chip.warn { border-color: #765f3d; color: var(--orange); }
+      .auth-screen { position: fixed; inset: 0; z-index: 12; display: grid; place-items: center; padding: 18px; background: #0b1012; }
+      .auth-screen[hidden] { display: none; }
+      .auth-card { width: min(460px, 100%); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 24px 70px var(--shadow); }
+      .auth-header { display: grid; gap: 8px; padding: 26px 26px 20px; border-bottom: 1px solid var(--line-soft); }
+      .auth-header h2 { margin: 0; font-size: 22px; }
+      .auth-header p { margin: 0; color: var(--faint); font-size: 12px; line-height: 1.55; }
+      .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 20px 26px 0; padding: 4px; border: 1px solid var(--line); border-radius: 7px; background: #141a1c; }
+      .auth-tab { min-height: 34px; border: 0; border-radius: 5px; color: var(--faint); background: transparent; font-size: 12px; }
+      .auth-tab.active { color: var(--text); background: #2b3b40; }
+      .auth-panel { display: grid; gap: 12px; padding: 20px 26px 26px; }
+      .auth-panel[hidden] { display: none; }
+      .auth-form { display: grid; gap: 12px; }
+      .auth-form input { min-height: 40px; padding: 0 11px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: #141a1c; }
+      .auth-note { margin: 0; color: var(--faint); font-size: 11px; line-height: 1.55; }
+      .auth-provider { min-height: 42px; border: 1px solid #4b7a61; border-radius: 6px; color: var(--green); background: #1e3228; font-weight: 600; }
+      .muted-note { margin: 0; color: var(--faint); font-size: 11px; }
+      .danger-note { color: var(--red); }
+      .diagnostic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .diagnostic-card { padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #141a1c; }
+      .diagnostic-card span { display: block; color: var(--faint); font-size: 10px; }
+      .diagnostic-card strong { display: block; margin-top: 3px; font-size: 12px; font-weight: 500; }
+
+      @media (max-width: 1120px) {
+        .workspace { grid-template-columns: 250px minmax(0, 1fr); }
+        .inspector { display: none; }
+      }
+      @media (max-width: 760px) {
+        .topbar { min-height: 56px; padding: 0 14px; gap: 10px; }
+        .brand { min-width: 0; }
+        .brand-name { font-size: 13px; }
+        .runtime-status { display: none; }
+        .top-action { padding: 0 8px; font-size: 11px; }
+        .top-action span:first-child { display: none; }
+        .mobile-toolbar { display: flex; align-items: center; gap: 7px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft); background: #141a1c; }
+        .mobile-toolbar .icon-action { width: auto; padding: 0 9px; font-size: 12px; }
+        .workspace { display: block; }
+        .sidebar, .inspector { display: none; position: absolute; z-index: 3; top: 105px; right: 12px; bottom: 12px; left: 12px; overflow: auto; border: 1px solid var(--line); box-shadow: 0 20px 48px var(--shadow); }
+        .sidebar.mobile-open, .inspector.mobile-open { display: block; }
+        .conversation { min-height: calc(100vh - 105px); }
+        .conversation-header { min-height: 64px; padding: 0 14px; }
+        .conversation-actions .top-action { display: none; }
+        .event-stream { padding: 18px 14px 16px; }
+        .composer { padding: 10px 14px 13px; }
+        .composer-foot { display: none; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell" id="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">h</div>
+          <div class="brand-name">harndock Gateway<span>Gateway Web / Desktop 综合原型</span></div>
+        </div>
+        <div class="runtime-status"><span class="status-dot" aria-hidden="true"></span><span id="runtime-copy">PC 在线 · 58 ms</span></div>
+        <div class="topbar-spacer"></div>
+        <a class="top-action" href="mobile-prototype.html"><span aria-hidden="true">▯</span><span>Mobile 原型</span></a>
+        <button class="top-action" id="runtime-button" type="button"><span aria-hidden="true">↻</span><span>连接正常</span></button>
+        <button class="top-action" type="button" id="device-button"><span aria-hidden="true">◉</span><span>设备</span> <b class="device-count">3</b></button>
+        <button class="top-action" type="button" id="connection-button"><span aria-hidden="true">⌘</span><span>Gateway</span></button>
+        <button class="top-action" type="button" id="diagnostic-button"><span aria-hidden="true">⌁</span><span>诊断</span></button>
+        <button class="icon-action" type="button" id="account-button" aria-label="打开账号菜单">•••</button>
+      </header>
+
+      <nav class="mobile-toolbar" aria-label="移动端面板">
+        <button class="icon-action" type="button" id="sessions-toggle" aria-expanded="false">☰　Session</button>
+        <button class="icon-action" type="button" id="inspector-toggle" aria-expanded="false">☷　同步</button>
+      </nav>
+
+      <main class="workspace">
+        <aside class="sidebar" id="session-sidebar" aria-label="Session 列表">
+          <div class="sidebar-header"><h1>Sessions</h1><span class="count">3 个</span></div>
+          <div class="session-filter">⌕　搜索 Session</div>
+          <div class="section-label">活动中</div>
+          <div class="session-list" id="session-list"></div>
+          <div class="section-label">最近访问</div>
+          <div class="session-list">
+            <button class="session-row" type="button" data-session="history"><span class="row-dot"></span><span><span class="session-title">整理发布检查清单</span><span class="session-meta">昨天 · 已完成</span></span><span class="session-unread">›</span></button>
+          </div>
+        </aside>
+
+        <section class="conversation" aria-label="Session 对话">
+          <header class="conversation-header">
+            <div class="conversation-heading"><h2 id="session-title">移动端同步方案评审</h2><p id="session-subtitle">PC · harndock · 正在运行</p></div>
+            <div class="conversation-actions">
+              <span class="control-state" id="control-state"><i aria-hidden="true"></i><span>可控制 · 命令串行</span></span>
+              <button class="top-action" type="button" id="stop-top">■　停止</button>
+            </div>
+          </header>
+          <div class="connection-banner" id="connection-banner" role="status" hidden><span id="connection-copy">PC 已离线，历史仍可查看，控制命令暂不可用。</span><button class="banner-action" id="connection-retry" type="button">重试连接</button></div>
+          <div class="event-stream" id="event-stream" aria-live="polite"></div>
+          <form class="composer" id="composer">
+            <div class="composer-inner">
+              <div class="composer-box">
+                <textarea id="prompt" rows="2" placeholder="向 PC 上的 Agent 发送消息…"></textarea>
+                <button class="send-button" type="submit">发送　↵</button>
+              </div>
+              <div class="composer-foot"><span>消息将由 PC Harness 执行</span><span>Enter 发送 · Shift + Enter 换行</span></div>
+            </div>
+          </form>
+        </section>
+
+        <aside class="inspector" id="inspector" aria-label="同步和控制状态">
+          <div class="inspector-header"><h2>同步检查器</h2><span class="count">实时</span></div>
+          <section class="inspector-section">
+            <h3>当前 Session</h3>
+            <div class="sync-row"><span>状态</span><strong class="good" id="sync-status">运行中</strong></div>
+            <div class="sync-row"><span>事件游标</span><strong id="sync-seq">128</strong></div>
+            <div class="sync-row"><span>最后同步</span><strong id="sync-time">刚刚</strong></div>
+            <div class="sync-row"><span>连接延迟</span><strong>58 ms</strong></div>
+          </section>
+          <section class="inspector-section">
+            <h3>在线设备</h3>
+            <div class="device-list">
+              <div class="device-row"><span class="device-avatar">M</span><div class="device-copy"><strong>我的 iPhone</strong><span>当前设备 · Controller</span></div><i class="device-online" aria-label="在线"></i></div>
+              <div class="device-row"><span class="device-avatar">i</span><div class="device-copy"><strong>iPad mini</strong><span>正在查看 · 12 秒前</span></div><i class="device-online" aria-label="在线"></i></div>
+              <div class="device-row"><span class="device-avatar">W</span><div class="device-copy"><strong>工作浏览器</strong><span>正在查看 · 1 分钟前</span></div><i class="device-online" aria-label="在线"></i></div>
+            </div>
+          </section>
+          <section class="inspector-section">
+            <h3>命令队列</h3>
+            <div class="lease-box"><p><strong>V1 串行执行</strong> 同一 Session 同时只执行一个普通命令，其他命令会显示排队状态。</p><button class="lease-button" id="queue-button" type="button">查看命令状态</button></div>
+          </section>
+          <section class="inspector-section">
+            <h3>最近命令</h3>
+            <div class="sync-row"><span>cmd_01J8…</span><strong class="good" id="command-copy">已完成 · 由 PC 确认</strong></div>
+            <div class="sync-row"><span>同步策略</span><strong>未知状态不自动重放</strong></div>
+          </section>
+          <section class="inspector-section">
+            <h3>图例</h3>
+            <div class="legend"><div class="legend-row"><i class="legend-mark"></i>PC 产生的实时事件</div><div class="legend-row"><i class="legend-mark blue"></i>我的控制命令</div><div class="legend-row"><i class="legend-mark orange"></i>需要人工审批</div></div>
+          </section>
+        </aside>
+      </main>
+      <div class="modal" id="connection-modal" role="dialog" aria-modal="true" aria-labelledby="connection-modal-title" hidden>
+        <div class="modal-card">
+          <div class="modal-header"><div><h2 id="connection-modal-title">连接与凭据</h2><p>Desktop 和 Mobile 使用同一个 Gateway origin，但使用不同的设备凭据。</p></div><button class="icon-action modal-close" type="button" aria-label="关闭连接窗口">×</button></div>
+          <div class="modal-body">
+            <section class="modal-section"><h3>Gateway origin</h3><label class="modal-field">地址<input id="gateway-origin" value="https://sync.example.test" autocomplete="url" spellcheck="false" /></label><div class="origin-preview"><strong id="gateway-protocol-copy">HTTPS · 生产连接</strong><span id="gateway-endpoint-copy">REST /v1/sessions · Viewer stream /v1/stream · PC WS /v1/ws</span></div><p class="muted-note">只填写 origin，不要带 /v1、查询参数或 hash。HTTP 仅用于 loopback 开发环境。</p><div class="modal-actions"><button class="action-button primary" id="save-gateway-button" type="button">保存 Gateway</button></div></section>
+            <section class="modal-section"><h3>harndock Desktop</h3><div class="modal-row"><div><strong>当前 Runtime</strong><span id="desktop-runtime-copy">我的 Mac · Device dev_pc_01 · Runtime runtime_mac_01</span></div><span class="status-chip good" id="desktop-status-chip">已配对 · 在线</span></div><div class="modal-actions"><button class="action-button" id="desktop-settings-button" type="button">打开客户端配置</button></div><label class="modal-field">Gateway origin<input id="desktop-gateway-origin" value="https://sync.example.test" autocomplete="url" spellcheck="false" /></label><label class="modal-field">一次性配对码<input id="desktop-pairing-code" inputmode="text" placeholder="粘贴部署侧生成的配对码" autocomplete="one-time-code" spellcheck="false" /></label><div class="pairing-grid"><label class="modal-field">设备名称<input id="desktop-device-name" value="我的 Mac" /></label><label class="modal-field">平台<select id="desktop-platform"><option value="macos">macOS</option><option value="windows">Windows</option><option value="linux">Linux</option></select></label></div><div class="origin-preview"><strong id="desktop-websocket-copy">PC WebSocket：wss://sync.example.test/v1/ws</strong><span>配对成功后，PC 私钥保存在系统 Keychain，配置文件只保存 Gateway 和设备元数据。</span></div><div class="modal-actions"><button class="action-button" id="desktop-unpair-button" type="button">解除配对</button><button class="action-button primary" id="desktop-pair-button" type="button">保存并连接 Desktop</button></div><p class="muted-note" id="desktop-config-message">Desktop 不使用 Mobile access token；配对码只使用一次，过期或重复使用需要重新生成。</p></section>
+            <section class="modal-section"><h3>Mobile access token</h3><div class="token-row"><div class="token-copy"><strong>tok_...A81F</strong><span>当前 BlueStacks · session.read, session.control · 还剩 14 分钟</span></div><span class="status-chip good">有效</span></div><div class="token-row"><div class="token-copy"><strong>tok_...0D42</strong><span>工作浏览器 · session.read · 昨天使用</span></div><span class="status-chip warn">已过期</span></div><p class="muted-note">列表只展示 token 元数据。原始 token 只在签发成功时显示一次；撤销设备会使该设备的所有 token 失效。</p><div class="modal-actions"><button class="action-button danger" id="revoke-mobile-token" type="button">撤销当前 token</button></div></section>
+            <section class="modal-section"><h3>当前账号</h3><div class="modal-row"><div><strong>acct_example</strong><span>当前设备：BlueStacks · Device ID dev_mobile_01</span></div><span class="status-chip good">已登录</span></div></section>
+          </div>
+        </div>
+      </div>
+      <div class="modal" id="desktop-settings-modal" role="dialog" aria-modal="true" aria-labelledby="desktop-settings-title" hidden>
+        <div class="modal-card">
+          <div class="modal-header"><div><h2 id="desktop-settings-title">harndock Desktop</h2><p>这是 PC 客户端的本机配置页，不是 Gateway 管理后台。</p></div><button class="icon-action modal-close" type="button" aria-label="关闭 Desktop 配置">×</button></div>
+          <div class="modal-body">
+            <section class="modal-section"><h3>Runtime 连接</h3><div class="modal-row"><div><strong id="desktop-settings-status">已配对 · Runtime 在线</strong><span>启动 Harness Runtime 时自动读取本机 Remote Sync 配置。</span></div><span class="status-chip good">运行中</span></div><label class="modal-field">Gateway origin<input id="desktop-settings-origin" value="https://sync.example.test" autocomplete="url" spellcheck="false" /></label><div class="origin-preview"><strong id="desktop-settings-ws">PC WebSocket：wss://sync.example.test/v1/ws</strong><span>Desktop 只连接出站 Gateway WebSocket，不开放本机 Harness 端口。</span></div></section>
+            <section class="modal-section"><h3>PC Device 身份</h3><div class="modal-row"><div><strong>Device ID</strong><span>dev_pc_01</span></div><span class="status-chip good">有效</span></div><div class="modal-row"><div><strong>Runtime ID</strong><span>runtime_mac_01 · profile desktop</span></div><span class="status-chip good">在线</span></div><div class="modal-row"><div><strong>私钥存储</strong><span>系统 Keychain · 不写入 config.json</span></div><span class="status-chip good">安全存储</span></div></section>
+            <section class="modal-section"><h3>启动行为</h3><label class="modal-row"><div><strong>Runtime 启动时自动连接</strong><span>连接失败时保留 outbox，并按退避策略重试。</span></div><input id="desktop-auto-connect" type="checkbox" checked /></label><label class="modal-field">设备名称<input id="desktop-settings-device-name" value="我的 Mac" /></label><div class="modal-actions"><button class="action-button danger" id="desktop-settings-unpair" type="button">解除配对</button><button class="action-button primary" id="desktop-settings-save" type="button">保存并重启 Runtime</button></div><p class="muted-note" id="desktop-settings-message">配置保存后会重启 Remote Sync Connector；不会删除本地 Session 或 outbox。</p></section>
+          </div>
+        </div>
+      </div>
+      <div class="modal" id="device-modal" role="dialog" aria-modal="true" aria-labelledby="device-modal-title" hidden>
+        <div class="modal-card">
+          <div class="modal-header"><div><h2 id="device-modal-title">设备与 PC 配对</h2><p>管理已登录设备，或把一个新的 PC Runtime 连接到当前账号。</p></div><button class="icon-action modal-close" type="button" aria-label="关闭设备窗口">×</button></div>
+          <div class="modal-body">
+            <section class="modal-section"><h3>已连接设备</h3>
+              <div class="modal-row"><div><strong>我的 iPhone</strong><span>当前设备 · Controller · 最近在线</span></div><strong class="good">在线</strong></div>
+              <div class="modal-row"><div><strong>iPad mini</strong><span>Viewer · 12 秒前在线</span></div><button class="action-button danger revoke" type="button">撤销</button></div>
+              <div class="modal-row"><div><strong>工作浏览器</strong><span>Viewer · 1 分钟前在线</span></div><button class="action-button danger revoke" type="button">撤销</button></div>
+            </section>
+            <section class="modal-section"><h3>连接 PC</h3><p class="muted-note">Desktop 的 Gateway 地址、配对码、设备名称和平台统一在“Gateway”连接窗口配置。</p><div class="modal-actions"><button class="action-button primary" id="open-desktop-config" type="button">打开 Desktop 配置</button></div><p class="muted-note">配对码短时有效且只能使用一次。不要把配对码发送给其他人。</p></section>
+            <section class="modal-section"><h3>安全提示</h3><p class="muted-note danger-note">撤销设备后，该设备的历史读取、实时连接和远程控制都会立即失效；恢复需要重新配对。</p></section>
+          </div>
+        </div>
+      </div>
+      <div class="modal" id="diagnostic-modal" role="dialog" aria-modal="true" aria-labelledby="diagnostic-modal-title" hidden>
+        <div class="modal-card"><div class="modal-header"><div><h2 id="diagnostic-modal-title">连接诊断</h2><p>只展示同步状态，不展示 token、私钥或完整工具 payload。</p></div><button class="icon-action modal-close" type="button" aria-label="关闭诊断窗口">×</button></div><div class="modal-body"><section class="modal-section"><h3>当前连接</h3><div class="diagnostic-grid"><div class="diagnostic-card"><span>Gateway</span><strong id="diagnostic-gateway">sync.example.test · HTTPS</strong></div><div class="diagnostic-card"><span>PC Runtime</span><strong id="diagnostic-runtime">在线 · 58 ms</strong></div><div class="diagnostic-card"><span>Viewer stream</span><strong id="diagnostic-stream">已连接</strong></div><div class="diagnostic-card"><span>事件游标</span><strong>128 · 无缺口</strong></div></div></section><section class="modal-section"><h3>恢复动作</h3><p class="muted-note" id="diagnostic-copy">最近一次同步刚刚完成。发生缺口时客户端会暂停投影、走 REST 补发，再恢复订阅。</p><div class="modal-actions"><button class="action-button" id="simulate-gap" type="button">模拟游标缺口</button><button class="action-button primary" id="diagnostic-retry" type="button">重新连接</button></div></section></div></div>
+      </div>
+      <div class="modal" id="account-modal" role="dialog" aria-modal="true" aria-labelledby="account-modal-title" hidden>
+        <div class="modal-card"><div class="modal-header"><div><h2 id="account-modal-title">账号与隐私</h2><p>当前客户端使用同一 Gateway origin 下的管理员登录会话。</p></div><button class="icon-action modal-close" type="button" aria-label="关闭账号窗口">×</button></div><div class="modal-body"><section class="modal-section"><h3>当前账号</h3><div class="modal-row"><div><strong>admin</strong><span>已登录 · session.read / session.control</span></div><strong class="good">有效</strong></div></section><section class="modal-section"><h3>数据边界</h3><p class="muted-note">云端只保存同步所需的安全事件摘要和命令状态。事件正文的保留期限由服务端策略决定，V1 不提供计费、套餐或额度页面。</p></section><section class="modal-section"><h3>身份入口</h3><p class="muted-note">Gateway 不开放注册；管理员由部署环境首次初始化，密码和 refresh session 只在 Auth 安全边界内处理。</p><div class="modal-actions"><button class="action-button" id="open-auth-button" type="button">打开管理员登录原型</button><button class="action-button danger" id="signout-button" type="button">退出登录</button></div></section></div></div>
+      </div>
+      <div class="auth-screen" id="auth-screen" hidden>
+        <section class="auth-card" aria-labelledby="auth-title">
+          <div class="auth-header"><div class="brand-name">harndock Gateway<span>harndock 多端同步</span></div><h2 id="auth-title">管理员登录</h2><p>Gateway 不开放注册；登录后可以查看已授权的 Session，并管理 Desktop、Mobile 和 Browser 设备。</p></div>
+          <section class="auth-panel" id="auth-login-panel"><form class="auth-form" id="auth-login-form"><label class="modal-field">管理员账号<input value="admin" autocomplete="username" /></label><button class="auth-provider" id="harndock-auth-login-button" type="submit">登录 Gateway</button></form><p class="auth-note" id="auth-login-message">管理员由部署环境首次初始化；后续凭据通过受保护的 curl 管理接口修改。</p></section>
+          <div class="auth-panel"><div class="modal-actions"><button class="action-button" id="close-auth-button" type="button">返回工作台</button></div></div>
+        </section>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const sessions = {
+        active: {
+          title: "移动端同步方案评审",
+          subtitle: "PC · harndock · 正在运行",
+          status: "running",
+          seq: 128,
+          events: [
+            { kind: "user", actor: "我", time: "09:26", text: "把多端实时查看和远程控制的协议边界再收敛一下。" },
+            { kind: "assistant", actor: "Harness", time: "09:27", text: "建议保持 PC 单写者模型。移动端发送命令，实际状态仍以 PC 产生的 Session event 为准。" },
+            { kind: "tool", actor: "Harness", time: "09:28", status: "等待审批", command: "pnpm test:sync", approval: true },
+            { kind: "assistant", actor: "Harness", time: "09:29", text: "我正在检查事件游标、命令幂等和多设备广播的测试覆盖。" }
+          ]
+        },
+        review: {
+          title: "Runtime 发布检查",
+          subtitle: "PC · release-workspace · 已暂停",
+          status: "paused",
+          seq: 72,
+          events: [
+            { kind: "user", actor: "我", time: "昨天", text: "检查生产 Runtime artifact 的清单、哈希和回滚路径。" },
+            { kind: "assistant", actor: "Harness", time: "昨天", text: "清单校验和结构化 ready 协议已覆盖，artifact 构建器仍在开发中。" },
+            { kind: "system", actor: "系统", time: "昨天", text: "Session 已暂停。" }
+          ]
+        },
+        history: {
+          title: "整理发布检查清单",
+          subtitle: "PC · harndock · 已完成",
+          status: "completed",
+          seq: 41,
+          events: [
+            { kind: "user", actor: "我", time: "昨天", text: "整理一次发布前检查清单。" },
+            { kind: "assistant", actor: "Harness", time: "昨天", text: "清单已整理完成，包含构建、签名、独立启动探测和回滚验证。" },
+            { kind: "system", actor: "系统", time: "昨天", text: "Session 已完成。" }
+          ]
+        }
+      };
+      let selected = "active";
+      let streaming = false;
+      let streamTimer;
+
+      const $ = (id) => document.getElementById(id);
+      const sessionList = $("session-list");
+      const eventStream = $("event-stream");
+
+      function showToast(message) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.add("visible");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), 2600);
+      }
+
+      function renderSessionList() {
+        const rows = [
+          ["active", "移动端同步方案评审", "刚刚 · 运行中", "2"],
+          ["review", "Runtime 发布检查", "18 分钟前 · 已暂停", ""],
+        ];
+        sessionList.innerHTML = "";
+        rows.forEach(([id, title, meta, unread]) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `session-row${selected === id ? " active" : ""}${id === "review" ? " warn" : ""}`;
+          button.dataset.session = id;
+          button.innerHTML = `<span class="row-dot"></span><span><span class="session-title"></span><span class="session-meta"></span></span><span class="session-unread"></span>`;
+          button.querySelector(".session-title").textContent = title;
+          button.querySelector(".session-meta").textContent = meta;
+          button.querySelector(".session-unread").textContent = unread;
+          button.addEventListener("click", () => selectSession(id));
+          sessionList.appendChild(button);
+        });
+      }
+
+      function renderEvent(item) {
+        const event = document.createElement("article");
+        event.className = `event ${item.kind}`;
+        const meta = document.createElement("div");
+        meta.className = "event-meta";
+        meta.innerHTML = `<strong></strong><span></span>`;
+        meta.querySelector("strong").textContent = item.actor;
+        meta.querySelector("span").textContent = item.time;
+        event.appendChild(meta);
+        const body = document.createElement("div");
+        body.className = "event-body";
+        if (item.kind === "tool") {
+          body.classList.add("tool-card");
+          body.innerHTML = `<div class="tool-head"><span class="tool-name">工具调用 · ${item.command}</span><span class="tool-status"></span></div><pre class="tool-code">workspace: harndock\noperation: run tests\nsource: remote command</pre><div class="tool-actions"><button class="action-button primary approve" type="button">允许一次</button><button class="action-button danger reject" type="button">拒绝</button></div>`;
+          const status = body.querySelector(".tool-status");
+          const approve = body.querySelector(".approve");
+          const reject = body.querySelector(".reject");
+          if (item.decision) {
+            status.textContent = item.decision === "approved" ? "已允许" : "已拒绝";
+            approve.disabled = true;
+            reject.disabled = true;
+          } else {
+            status.textContent = item.status;
+            approve.addEventListener("click", () => decideApproval(item, "approved", status, approve, reject));
+            reject.addEventListener("click", () => decideApproval(item, "rejected", status, approve, reject));
+          }
+        } else {
+          const text = document.createElement("p");
+          text.className = "event-text";
+          text.textContent = item.text;
+          body.appendChild(text);
+        }
+        event.appendChild(body);
+        eventStream.appendChild(event);
+      }
+
+      function renderSelected() {
+        const session = sessions[selected];
+        $("session-title").textContent = session.title;
+        $("session-subtitle").textContent = session.subtitle;
+        $("sync-status").textContent = session.status === "running" ? "运行中" : session.status === "paused" ? "已暂停" : "已完成";
+        $("sync-seq").textContent = String(session.seq);
+        eventStream.innerHTML = "";
+        session.events.forEach(renderEvent);
+        eventStream.scrollTop = eventStream.scrollHeight;
+        renderSessionList();
+      }
+
+      function selectSession(id) {
+        if (!sessions[id]) return;
+        selected = id;
+        window.clearTimeout(streamTimer);
+        streaming = false;
+        renderSelected();
+        $("session-sidebar").classList.remove("mobile-open");
+        $("sessions-toggle").setAttribute("aria-expanded", "false");
+      }
+
+      function decideApproval(item, decision, status, approve, reject) {
+        item.decision = decision;
+        status.textContent = decision === "approved" ? "已允许" : "已拒绝";
+        approve.disabled = true;
+        reject.disabled = true;
+        sessions[selected].seq += 1;
+        $("sync-seq").textContent = String(sessions[selected].seq);
+        $("sync-time").textContent = "刚刚";
+        showToast(decision === "approved" ? "审批已发送到 PC" : "已拒绝这次工具调用");
+      }
+
+      function appendEvent(item) {
+        sessions[selected].events.push(item);
+        sessions[selected].seq += 1;
+        renderEvent(item);
+        $("sync-seq").textContent = String(sessions[selected].seq);
+        $("sync-time").textContent = "刚刚";
+        eventStream.scrollTop = eventStream.scrollHeight;
+      }
+
+      function sendPrompt(text) {
+        if (!text || streaming || sessions[selected].status !== "running") return;
+        appendEvent({ kind: "user", actor: "我", time: "刚刚", text });
+        const response = { kind: "assistant", actor: "Harness", time: "现在", text: "", streaming: true };
+        sessions[selected].events.push(response);
+        sessions[selected].seq += 1;
+        renderEvent(response);
+        $("sync-seq").textContent = String(sessions[selected].seq);
+        streaming = true;
+        showToast("命令已送到 PC，正在执行");
+        streamTimer = window.setTimeout(() => {
+          response.text = "收到。我会继续执行，并把后续工具调用和结果同步到所有在线设备。";
+          response.streaming = false;
+          streaming = false;
+          renderSelected();
+          showToast("Agent 已产生新的实时事件");
+        }, 1200);
+      }
+
+      function stopTask() {
+        if (!streaming) {
+          showToast("当前没有可停止的任务");
+          return;
+        }
+        window.clearTimeout(streamTimer);
+        streaming = false;
+        sessions[selected].status = "paused";
+        sessions[selected].subtitle = "PC · harndock · 已暂停";
+        appendEvent({ kind: "system", actor: "系统", time: "刚刚", text: "停止命令已确认，当前轮次已中断。" });
+        renderSelected();
+        showToast("停止命令已确认");
+      }
+
+      function openModal(id) { $(id).hidden = false; }
+      function closeModal(modal) { modal.hidden = true; }
+
+      function updateGatewayPreview(value) {
+        const protocolCopy = $("gateway-protocol-copy");
+        const endpointCopy = $("gateway-endpoint-copy");
+        try {
+          const url = new URL(value.trim());
+          const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+          if (url.pathname !== "/" || url.search || url.hash || !["http:", "https:"].includes(url.protocol) || (url.protocol === "http:" && !loopback)) throw new Error("invalid origin");
+          protocolCopy.textContent = url.protocol === "https:" ? "HTTPS · 生产连接" : "HTTP · loopback 开发连接";
+          endpointCopy.textContent = `REST ${url.origin}/v1/sessions · Viewer stream ${url.origin.replace(/^http/, "ws")}/v1/stream · PC WS ${url.origin.replace(/^http/, "ws")}/v1/ws`;
+          return url;
+        } catch {
+          protocolCopy.textContent = "地址无效";
+          endpointCopy.textContent = "请输入 HTTPS origin，或本地 loopback HTTP origin";
+          return undefined;
+        }
+      }
+
+      function updateDesktopWebsocketPreview(value) {
+        const url = updateGatewayPreview(value);
+        $("desktop-websocket-copy").textContent = url === undefined
+          ? "PC WebSocket：等待有效 Gateway origin"
+          : `PC WebSocket：${url.origin.replace(/^http/, "ws")}/v1/ws`;
+        return url;
+      }
+
+      function updateDesktopSettingsPreview(value) {
+        const url = updateGatewayPreview(value);
+        $("desktop-settings-ws").textContent = url === undefined
+          ? "PC WebSocket：等待有效 Gateway origin"
+          : `PC WebSocket：${url.origin.replace(/^http/, "ws")}/v1/ws`;
+        return url;
+      }
+
+      function setAuthMode() {
+        $("auth-login-panel").hidden = false;
+        $("auth-title").textContent = "管理员登录";
+      }
+
+      function openAuth(mode = "login") {
+        setAuthMode(mode);
+        $("auth-screen").hidden = false;
+        window.location.hash = "login";
+      }
+
+      function closeAuth() {
+        $("auth-screen").hidden = true;
+        if (window.location.hash === "#login") window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+
+      function setConnection(online) {
+        $("connection-banner").hidden = online;
+        $("runtime-copy").textContent = online ? "PC 在线 · 58 ms" : "PC 离线 · 历史可查看";
+        $("diagnostic-runtime").textContent = online ? "在线 · 58 ms" : "离线 · 等待重连";
+        $("diagnostic-stream").textContent = online ? "已连接" : "已断开";
+        $("stop-top").disabled = !online;
+        $("prompt").disabled = !online;
+        $("prompt").placeholder = online ? "向 PC 上的 Agent 发送消息…" : "PC 离线，暂时不能发送命令";
+      }
+
+      $("composer").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = $("prompt");
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        sendPrompt(text);
+      });
+      $("prompt").addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          $("composer").requestSubmit();
+        }
+      });
+      $("stop-top").addEventListener("click", stopTask);
+      $("queue-button").addEventListener("click", () => showToast("命令状态：已完成；未知状态不会自动重放"));
+      $("device-button").addEventListener("click", () => openModal("device-modal"));
+      $("connection-button").addEventListener("click", () => openModal("connection-modal"));
+      $("account-button").addEventListener("click", () => openModal("account-modal"));
+      $("diagnostic-button").addEventListener("click", () => openModal("diagnostic-modal"));
+      $("gateway-origin").addEventListener("input", (event) => {
+        updateGatewayPreview(event.target.value);
+        $("desktop-gateway-origin").value = event.target.value;
+        updateDesktopWebsocketPreview(event.target.value);
+      });
+      $("desktop-gateway-origin").addEventListener("input", (event) => {
+        $("gateway-origin").value = event.target.value;
+        updateDesktopWebsocketPreview(event.target.value);
+      });
+      $("desktop-settings-origin").addEventListener("input", (event) => {
+        $("desktop-gateway-origin").value = event.target.value;
+        $("gateway-origin").value = event.target.value;
+        updateDesktopSettingsPreview(event.target.value);
+      });
+      $("save-gateway-button").addEventListener("click", () => {
+        const url = updateGatewayPreview($("gateway-origin").value);
+        if (url === undefined) {
+          showToast("Gateway 地址无效：仅支持 HTTPS 或 loopback HTTP");
+          return;
+        }
+        $("diagnostic-gateway").textContent = `${url.host} · ${url.protocol === "https:" ? "HTTPS" : "HTTP loopback"}`;
+        showToast("Gateway origin 已保存，连接配置已更新");
+      });
+      $("desktop-pair-button").addEventListener("click", () => {
+        const url = updateDesktopWebsocketPreview($("desktop-gateway-origin").value);
+        const code = $("desktop-pairing-code").value.trim();
+        const deviceName = $("desktop-device-name").value.trim();
+        if (url === undefined) { showToast("Desktop Gateway 地址无效：仅支持 HTTPS 或 loopback HTTP"); return; }
+        if (code.length < 16) { showToast("请输入有效的一次性配对码"); return; }
+        if (!deviceName) { showToast("请输入 Desktop 设备名称"); return; }
+        $("desktop-status-chip").textContent = "配对中…";
+        $("desktop-status-chip").className = "status-chip warn";
+        window.setTimeout(() => {
+          $("desktop-status-chip").textContent = "已配对 · 在线";
+          $("desktop-status-chip").className = "status-chip good";
+          $("desktop-runtime-copy").textContent = `${deviceName} · Device dev_pc_01 · Runtime runtime_mac_01`;
+          $("desktop-config-message").textContent = "配对成功，Desktop Runtime 将在重启后使用新的 Gateway。";
+          $("desktop-pairing-code").value = "";
+          showToast("harndock Desktop 已连接");
+        }, 450);
+      });
+      $("desktop-unpair-button").addEventListener("click", () => {
+        $("desktop-status-chip").textContent = "未配对";
+        $("desktop-status-chip").className = "status-chip warn";
+        $("desktop-config-message").textContent = "Desktop 已解除配对；恢复连接需要新的配对码。";
+        showToast("Desktop 已解除配对");
+      });
+      $("desktop-settings-button").addEventListener("click", () => {
+        $("desktop-settings-origin").value = $("desktop-gateway-origin").value;
+        $("desktop-settings-device-name").value = $("desktop-device-name").value;
+        updateDesktopSettingsPreview($("desktop-settings-origin").value);
+        closeModal($("connection-modal"));
+        openModal("desktop-settings-modal");
+      });
+      $("desktop-settings-save").addEventListener("click", () => {
+        const url = updateDesktopSettingsPreview($("desktop-settings-origin").value);
+        if (url === undefined) { showToast("Desktop Gateway 地址无效：仅支持 HTTPS 或 loopback HTTP"); return; }
+        $("desktop-gateway-origin").value = url.origin;
+        $("gateway-origin").value = url.origin;
+        $("desktop-device-name").value = $("desktop-settings-device-name").value;
+        $("desktop-settings-message").textContent = "配置已保存，Remote Sync Connector 将在 Runtime 重启后使用新的 Gateway。";
+        showToast("Desktop 客户端配置已保存");
+      });
+      $("desktop-settings-unpair").addEventListener("click", () => {
+        $("desktop-status-chip").textContent = "未配对";
+        $("desktop-status-chip").className = "status-chip warn";
+        $("desktop-settings-status").textContent = "未配对 · Runtime 不连接 Gateway";
+        $("desktop-settings-message").textContent = "Desktop 已解除配对；需要新的配对码才能恢复连接。";
+        showToast("Desktop 已解除配对");
+      });
+      $("revoke-mobile-token").addEventListener("click", (event) => { event.currentTarget.disabled = true; event.currentTarget.textContent = "当前 token 已撤销"; showToast("当前 token 已撤销，移动端需要重新连接"); });
+      $("runtime-button").addEventListener("click", () => {
+        const copy = $("runtime-copy");
+        const status = copy.textContent;
+        const online = !status.includes("离线") && !status.includes("连接中");
+        setConnection(!online);
+        showToast(online ? "PC 已标记为离线，历史仍可查看" : "正在重新连接 PC");
+      });
+      $("connection-retry").addEventListener("click", () => { setConnection(true); showToast("PC 已恢复连接，正在校正事件游标"); });
+      $("diagnostic-retry").addEventListener("click", () => { setConnection(true); $("diagnostic-copy").textContent = "连接已恢复，正在校正事件游标并恢复订阅。"; showToast("诊断完成：连接已恢复"); });
+      $("simulate-gap").addEventListener("click", () => { $("diagnostic-stream").textContent = "补发中 · 已暂停投影"; $("diagnostic-copy").textContent = "检测到 seq 缺口 129–131，客户端已暂停增量展示，正在通过 REST 补发。"; showToast("已模拟 cursor_gap，点击重新连接完成恢复"); });
+      $("open-desktop-config").addEventListener("click", () => { closeModal($("device-modal")); openModal($("connection-modal")); });
+      $("open-auth-button").addEventListener("click", () => { closeModal($("account-modal")); openAuth("login"); });
+      $("close-auth-button").addEventListener("click", closeAuth);
+      $("auth-login-form").addEventListener("submit", (event) => { event.preventDefault(); $("auth-login-message").textContent = "登录成功，harndock Auth 已返回 principal；Gateway 已加载当前账号和 Device。"; closeAuth(); showToast("已登录 acct_example"); });
+      $("signout-button").addEventListener("click", () => { closeModal($("account-modal")); showToast("已退出本地账号会话"); });
+      document.querySelectorAll(".revoke").forEach((button) => button.addEventListener("click", () => { button.disabled = true; button.textContent = "已撤销"; showToast("设备已撤销，现有连接将被关闭"); }));
+      document.querySelectorAll(".modal-close").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal"))));
+      document.querySelectorAll(".modal").forEach((modal) => modal.addEventListener("click", (event) => { if (event.target === modal) closeModal(modal); }));
+      $("sessions-toggle").addEventListener("click", () => {
+        const sidebar = $("session-sidebar");
+        const open = sidebar.classList.toggle("mobile-open");
+        $("sessions-toggle").setAttribute("aria-expanded", String(open));
+        $("inspector").classList.remove("mobile-open");
+        $("inspector-toggle").setAttribute("aria-expanded", "false");
+      });
+      $("inspector-toggle").addEventListener("click", () => {
+        const inspector = $("inspector");
+        const open = inspector.classList.toggle("mobile-open");
+        $("inspector-toggle").setAttribute("aria-expanded", String(open));
+        $("session-sidebar").classList.remove("mobile-open");
+        $("sessions-toggle").setAttribute("aria-expanded", "false");
+      });
+      document.querySelectorAll("[data-session]").forEach((button) => button.addEventListener("click", () => selectSession(button.dataset.session)));
+      updateGatewayPreview($("gateway-origin").value);
+      updateDesktopWebsocketPreview($("desktop-gateway-origin").value);
+      updateDesktopSettingsPreview($("desktop-settings-origin").value);
+      if (window.location.hash === "#register") openAuth("register");
+      else if (window.location.hash === "#login") openAuth("login");
+      window.addEventListener("hashchange", () => {
+        if (window.location.hash === "#register") openAuth("register");
+        else if (window.location.hash === "#login") openAuth("login");
+      });
+      renderSelected();
+    </script>
+  </body>
+</html>

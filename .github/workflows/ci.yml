@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install and build pinned Harness
+        env:
+          CI: "true"
+          DSH_CLIENT_TITLE: Harndock
+        run: |
+          pnpm --dir vendor/deepseek-harness install --frozen-lockfile
+          pnpm --dir vendor/deepseek-harness build
+
+      - name: Check workspace
+        run: pnpm check
+
+      - name: Build Bootstrap UI
+        run: pnpm build:web

@@ -1,0 +1,16 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JHELLO",
+  "kind": "client.hello",
+  "deviceId": "dev_phone_a",
+  "sentAt": "2026-08-18T09:30:00.000Z",
+  "payload": {
+    "supportedVersions": [1],
+    "client": {
+      "name": "harndock-mobile",
+      "version": "0.1.0",
+      "platform": "ios",
+      "capabilities": ["session.read", "session.prompt"]
+    }
+  }
+}

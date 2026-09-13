@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "resources": {
+      "../../../dist/runtime/harndock-runtime-2026.09.04.1-darwin-aarch64.tar.zst": "runtime/harndock-runtime-2026.09.04.1-darwin-aarch64.tar.zst",
+      "../../../dist/runtime/harndock-runtime-2026.09.04.1-darwin-aarch64.tar.zst.sha256": "runtime/harndock-runtime-2026.09.04.1-darwin-aarch64.tar.zst.sha256",
+      "../../../runtime/bundled-runtime.json": "runtime/bundled-runtime.json",
+      "../../../runtime/bundled-runtime.schema.json": "runtime/bundled-runtime.schema.json"
+    }
+  }
+}

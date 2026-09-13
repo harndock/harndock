@@ -1,0 +1,30 @@
+.DS_Store
+.codegraph/
+node_modules/
+dist/
+target/
+packages/*/lib/
+*.log
+
+# Local configuration and signing material must never be committed.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.mobileprovision
+
+# Local runtime artifacts and user data never belong in source control.
+runtime/artifacts/
+runtime/staging/
+.dsh-home/
+
+# Local-only plugin checkouts are not public repository dependencies.
+tmp-plugins/
+.expo/

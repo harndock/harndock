@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Harndock heron logo system</title>
+  <desc id="desc">Final Harndock heron mark shown in standard, reversed, monochrome, horizontal and app icon formats</desc>
+  <rect width="1600" height="1000" fill="#EEF0FF"/>
+  <text x="82" y="92" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="40" font-weight="700">Harndock / Heron Logo System</text>
+  <text x="82" y="132" fill="#5267C8" font-family="Inter,Arial,sans-serif" font-size="16" letter-spacing="3">FINAL MASTER · FIBONACCI GEOMETRY · ORIGINAL INDIGO</text>
+
+  <g transform="translate(82 186)">
+    <rect width="684" height="336" rx="16" fill="#F7F8FC"/>
+    <text x="28" y="42" fill="#5267C8" font-family="Inter,Arial,sans-serif" font-size="14" letter-spacing="2">PRIMARY MARK</text>
+    <g transform="translate(176 28) scale(.66)">
+      <path d="M121 316c36-80 105-117 187-99 54 12 92 47 108 99-50 29-107 36-161 16-45-17-89-22-134-16Z" fill="#161D45"/>
+      <path d="M279 229c-59-8-92-49-86-104 5-46 41-81 84-81 36 0 62 23 62 53 0 28-23 50-51 50h-47" fill="none" stroke="#161D45" stroke-width="30" stroke-linecap="round"/>
+      <path d="m334 62 127 28-123 29c14-19 13-38-4-57Z" fill="#5267C8"/>
+      <path d="M76 400h351" fill="none" stroke="#3F4FB5" stroke-width="14" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <g transform="translate(834 186)">
+    <rect width="684" height="336" rx="16" fill="#161D45"/>
+    <text x="28" y="42" fill="#9AA7FF" font-family="Inter,Arial,sans-serif" font-size="14" letter-spacing="2">REVERSED MARK</text>
+    <g transform="translate(176 28) scale(.66)">
+      <path d="M121 316c36-80 105-117 187-99 54 12 92 47 108 99-50 29-107 36-161 16-45-17-89-22-134-16Z" fill="#F7F8FC"/>
+      <path d="M279 229c-59-8-92-49-86-104 5-46 41-81 84-81 36 0 62 23 62 53 0 28-23 50-51 50h-47" fill="none" stroke="#F7F8FC" stroke-width="30" stroke-linecap="round"/>
+      <path d="m334 62 127 28-123 29c14-19 13-38-4-57Z" fill="#9AA7FF"/>
+      <path d="M76 400h351" fill="none" stroke="#5267C8" stroke-width="14" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <g transform="translate(82 586)">
+    <rect width="940" height="300" rx="16" fill="#F7F8FC"/>
+    <text x="28" y="42" fill="#5267C8" font-family="Inter,Arial,sans-serif" font-size="14" letter-spacing="2">HORIZONTAL LOCKUP</text>
+    <g transform="translate(28 70) scale(.42)">
+      <path d="M121 316c36-80 105-117 187-99 54 12 92 47 108 99-50 29-107 36-161 16-45-17-89-22-134-16Z" fill="#161D45"/>
+      <path d="M279 229c-59-8-92-49-86-104 5-46 41-81 84-81 36 0 62 23 62 53 0 28-23 50-51 50h-47" fill="none" stroke="#161D45" stroke-width="30" stroke-linecap="round"/>
+      <path d="m334 62 127 28-123 29c14-19 13-38-4-57Z" fill="#5267C8"/>
+      <path d="M76 400h351" fill="none" stroke="#3F4FB5" stroke-width="14" stroke-linecap="round"/>
+    </g>
+    <text x="280" y="200" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="132" font-weight="700">Harndock</text>
+  </g>
+
+  <g transform="translate(1090 586)">
+    <rect width="300" height="300" rx="68" fill="#161D45"/>
+    <g transform="translate(8 20) scale(.55)">
+      <path d="M121 316c36-80 105-117 187-99 54 12 92 47 108 99-50 29-107 36-161 16-45-17-89-22-134-16Z" fill="#F7F8FC"/>
+      <path d="M279 229c-59-8-92-49-86-104 5-46 41-81 84-81 36 0 62 23 62 53 0 28-23 50-51 50h-47" fill="none" stroke="#F7F8FC" stroke-width="30" stroke-linecap="round"/>
+      <path d="m334 62 127 28-123 29c14-19 13-38-4-57Z" fill="#9AA7FF"/>
+      <path d="M76 400h351" fill="none" stroke="#5267C8" stroke-width="14" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <g transform="translate(1450 612)">
+    <circle cx="20" cy="20" r="20" fill="#161D45"/><text x="52" y="27" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="15">#161D45</text>
+    <circle cx="20" cy="76" r="20" fill="#3F4FB5"/><text x="52" y="83" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="15">#3F4FB5</text>
+    <circle cx="20" cy="132" r="20" fill="#5267C8"/><text x="52" y="139" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="15">#5267C8</text>
+    <circle cx="20" cy="188" r="20" fill="#9AA7FF"/><text x="52" y="195" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="15">#9AA7FF</text>
+  </g>
+  <text x="82" y="948" fill="#161D45" font-family="Inter,Arial,sans-serif" font-size="15" letter-spacing="2">THE S-CURVE IS THE HERON · THE HORIZONTAL LINE IS THE DOCK</text>
+</svg>

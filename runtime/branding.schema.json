@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harndock.com/schemas/branding-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "productName", "baseName"],
+  "properties": {
+    "$schema": {
+      "const": "./branding.schema.json"
+    },
+    "productName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "baseName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    }
+  }
+}

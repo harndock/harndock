@@ -1,0 +1,35 @@
+# harndock's product layer. The desktop profile applies this after the
+# installation-owned base and web-app bundles, while user-installed bundles
+# remain later layers and can override or disable this row.
+- id: ui-brand-official
+  disabled: true
+
+- insert:
+    # The plugin is a no-op until Tauri provides a paired config and signer
+    # endpoint through the Runtime environment.
+    - id: harndock-remote-sync
+      name: '@harndock/remote-sync'
+
+    - id: harndock-runtime-bridge
+      name: '@harndock/runtime-bridge'
+
+    - id: harndock-client-desktop
+      name: '@harndock/client-desktop'
+
+    # Optional browser automation bridge. Keep it disabled by default so a
+    # desktop launch never downloads or starts an external MCP server unless
+    # the user explicitly enables it in the profile patch.
+    - id: mcp-playwright
+      name: '@deepseek-ai/dsh-mcp-client'
+      disabled: true
+      config:
+        transport: stdio
+        serverName: playwright
+        command: npx
+        args: ['-y', '@playwright/mcp@latest']
+        env: {}
+        cwd: ''
+        toolCallTimeoutMs: 120000
+        # Browser automation must not prevent the desktop profile from
+        # starting when npm/npx is unavailable in the GUI environment.
+        failOnStartupError: false

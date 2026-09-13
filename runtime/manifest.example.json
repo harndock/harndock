@@ -1,0 +1,68 @@
+{
+  "$schema": "./manifest.schema.json",
+  "manifestVersion": 1,
+  "runtimeVersion": "2026.09.04.1",
+  "runtimeApi": 1,
+  "target": "darwin-aarch64",
+  "archive": {
+    "format": "tar.zst",
+    "root": "harndock-runtime"
+  },
+  "shellCompatibility": {
+    "minVersion": "0.1.0",
+    "maxVersionExclusive": "0.2.0"
+  },
+  "components": {
+    "node": {
+      "version": "22.22.3"
+    },
+    "pnpm": {
+      "version": "11.9.0"
+    },
+    "harness": {
+      "version": "0.1.2-alpha.1",
+      "commit": "cd5ef8148158c3a752a658978873241fdf8e2bbc"
+    }
+  },
+  "launch": {
+    "node": "bin/node",
+    "packageManagerEntrypoint": "tools/pnpm/bin/pnpm.cjs",
+    "harnessEntrypoint": "app/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "cwd": "app"
+  },
+  "profile": {
+    "name": "desktop",
+    "bundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app",
+      "@harndock/desktop-bundle"
+    ]
+  },
+  "productPackages": [
+    {
+      "name": "@harndock/desktop-bundle",
+      "role": "bundle",
+      "path": "plugins/desktop-bundle"
+    },
+    {
+      "name": "@harndock/client-desktop",
+      "role": "client",
+      "path": "plugins/client-desktop"
+    },
+    {
+      "name": "@harndock/runtime-bridge",
+      "role": "host",
+      "path": "plugins/runtime-bridge"
+    },
+    {
+      "name": "@harndock/remote-sync",
+      "role": "host",
+      "path": "plugins/remote-sync"
+    }
+  ],
+  "control": {
+    "protocolVersion": 1,
+    "transport": "unix",
+    "schema": "control-protocol.schema.json"
+  }
+}

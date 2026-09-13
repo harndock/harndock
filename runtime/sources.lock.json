@@ -1,0 +1,15 @@
+{
+  "target": "darwin-aarch64",
+  "node": {
+    "version": "22.22.3",
+    "url": "https://nodejs.org/dist/v22.22.3/node-v22.22.3-darwin-arm64.tar.xz",
+    "sha256": "753c1629e168cc788ccc46ab61e0b35549fce08c07f82fcd3bb0d41f7fb01e7b",
+    "archiveRoot": "node-v22.22.3-darwin-arm64"
+  },
+  "pnpm": {
+    "version": "11.9.0",
+    "url": "https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz",
+    "sha256": "2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287",
+    "archiveRoot": "package"
+  }
+}

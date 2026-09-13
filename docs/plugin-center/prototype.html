@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111719" />
+    <meta name="description" content="harndock 本地插件中心 HTML 原型" />
+    <title>插件中心 · harndock</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e1315;
+        --surface: #141b1e;
+        --surface-2: #1a2326;
+        --surface-3: #202b2d;
+        --text: #eef3f0;
+        --muted: #a5b2ad;
+        --faint: #71807a;
+        --line: rgba(224, 241, 232, .11);
+        --line-strong: rgba(224, 241, 232, .2);
+        --green: #8fe0b3;
+        --green-deep: #2f6f52;
+        --blue: #8fc8ff;
+        --orange: #f3bc78;
+        --red: #f08c86;
+        --shadow: rgba(0, 0, 0, .38);
+        --radius: 10px;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; }
+      body { margin: 0; color: var(--text); background: var(--bg); line-height: 1.45; }
+      button, input { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+      [hidden] { display: none !important; }
+
+      .app-shell { min-height: 100vh; display: grid; grid-template-rows: 64px minmax(0, 1fr); }
+      .topbar { display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--line); background: #111719; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; min-width: 208px; color: var(--text); text-decoration: none; }
+      .brand-mark { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #4d8062; border-radius: 8px; color: var(--green); background: #1e3027; font-size: 16px; font-weight: 700; }
+      .brand-copy { font-size: 14px; font-weight: 650; letter-spacing: .01em; }
+      .brand-copy span { display: block; color: var(--faint); font-size: 10px; font-weight: 400; }
+      .topbar-search { width: min(430px, 40vw); display: flex; align-items: center; gap: 9px; padding: 0 11px; border: 1px solid var(--line); border-radius: 7px; color: var(--faint); background: #151d1f; }
+      .topbar-search span { font-size: 18px; line-height: 1; }
+      .topbar-search input { width: 100%; min-height: 34px; border: 0; outline: 0; color: var(--text); background: transparent; font-size: 12px; }
+      .topbar-search input::placeholder { color: var(--faint); }
+      .shortcut { color: var(--faint); font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+      .topbar-spacer { flex: 1; }
+      .runtime { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+      .runtime i, .status-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(143, 224, 179, .12); }
+      .icon-button { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: transparent; font-size: 17px; }
+      .icon-button:hover { color: var(--text); background: var(--surface-2); }
+
+      .workspace { min-height: 0; display: grid; grid-template-columns: 218px minmax(520px, 1fr) 344px; }
+      .sidebar, .detail-panel { background: var(--surface); }
+      .sidebar { padding: 18px 12px; border-right: 1px solid var(--line); }
+      .nav-label { margin: 8px 12px 9px; color: var(--faint); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+      .nav-list { display: grid; gap: 3px; margin: 0 0 27px; padding: 0; list-style: none; }
+      .nav-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 11px; border: 1px solid transparent; border-radius: 7px; color: var(--muted); background: transparent; text-align: left; font-size: 12px; }
+      .nav-item:hover { background: var(--surface-2); }
+      .nav-item.active { border-color: #375d49; color: var(--text); background: #20352a; }
+      .nav-icon { width: 18px; color: var(--faint); text-align: center; font-size: 15px; }
+      .nav-item.active .nav-icon { color: var(--green); }
+      .nav-count { min-width: 19px; margin-left: auto; color: var(--faint); font-size: 10px; text-align: right; }
+      .nav-count.alert { color: var(--orange); }
+      .local-card { margin-top: auto; padding: 13px; border: 1px solid #375c49; border-radius: 8px; background: #17251e; }
+      .local-card-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 12px; }
+      .local-card strong { font-size: 11px; font-weight: 600; }
+      .local-card small { color: var(--green); font-size: 10px; }
+      .local-meta { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+      .local-meta + .local-meta { margin-top: 7px; }
+      .local-meta i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+      .local-card button { width: 100%; min-height: 30px; margin-top: 13px; border: 1px solid #47745b; border-radius: 6px; color: var(--green); background: transparent; font-size: 10px; }
+      .local-card button:hover { background: #21382b; }
+
+      .main-content { min-width: 0; overflow: auto; padding: 28px clamp(22px, 4vw, 52px) 44px; background: #111719; }
+      .content-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+      .eyebrow { margin-bottom: 7px; color: var(--green); font-size: 10px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { margin-bottom: 6px; font-size: 27px; letter-spacing: -.04em; }
+      .content-head p { margin: 0; color: var(--muted); font-size: 12px; }
+      .head-actions { display: flex; gap: 8px; }
+      .text-button, .primary-button { min-height: 35px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 7px; color: var(--muted); background: transparent; font-size: 11px; white-space: nowrap; }
+      .text-button:hover { color: var(--text); background: var(--surface-2); }
+      .primary-button { border-color: #4c8063; color: #102019; background: var(--green); font-weight: 650; }
+      .primary-button:hover { background: #a5edc4; }
+      .primary-button[disabled] { cursor: default; opacity: .65; }
+
+      .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(190px, .8fr); gap: 22px; min-height: 186px; padding: 22px; margin-bottom: 25px; overflow: hidden; border: 1px solid #3a664f; border-radius: var(--radius); background: linear-gradient(114deg, #1c3126 0%, #172823 48%, #172328 100%); }
+      .hero-copy { align-self: center; }
+      .hero h2 { max-width: 390px; margin-bottom: 8px; font-size: 22px; letter-spacing: -.045em; }
+      .hero p { max-width: 420px; margin-bottom: 17px; color: #b8c9bf; font-size: 12px; }
+      .hero-cta { min-height: 33px; padding: 0 12px; border: 1px solid #65a37f; border-radius: 6px; color: #112018; background: var(--green); font-size: 11px; font-weight: 650; }
+      .hero-visual { position: relative; min-height: 136px; border-left: 1px solid rgba(143, 224, 179, .16); }
+      .hero-window { position: absolute; top: 10px; right: 6px; width: min(260px, 100%); padding: 10px; border: 1px solid rgba(215, 241, 225, .18); border-radius: 8px; background: rgba(11, 20, 16, .5); transform: rotate(2deg); }
+      .hero-window-top { display: flex; justify-content: space-between; margin-bottom: 14px; color: var(--faint); font-size: 8px; }
+      .hero-window-line { display: flex; align-items: center; gap: 7px; padding: 8px; border-top: 1px solid rgba(215, 241, 225, .1); color: var(--muted); font-size: 9px; }
+      .hero-window-line i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+      .hero-window-line b { margin-left: auto; color: var(--green); font-size: 8px; font-weight: 500; }
+
+      .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+      .tabs { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; background: #151d1f; }
+      .tab { min-height: 29px; padding: 0 11px; border: 0; border-radius: 5px; color: var(--faint); background: transparent; font-size: 11px; }
+      .tab:hover { color: var(--text); }
+      .tab.active { color: var(--text); background: var(--surface-3); }
+      .sort { min-height: 31px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: var(--surface); font-size: 10px; }
+      .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+      .filter { min-height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: transparent; font-size: 10px; }
+      .filter:hover, .filter.active { border-color: #4f8064; color: var(--green); background: #1b3025; }
+
+      .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+      .section-title h2 { margin: 0; font-size: 14px; font-weight: 600; }
+      .section-title span { color: var(--faint); font-size: 10px; }
+      .plugin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .plugin-card { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+      .plugin-card:hover, .plugin-card.selected { border-color: #456a55; background: #182421; transform: translateY(-1px); }
+      .plugin-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+      .plugin-icon { width: 38px; height: 38px; display: grid; place-items: center; flex: none; border: 1px solid rgba(143, 224, 179, .25); border-radius: 9px; color: var(--green); background: #1b3025; font-size: 18px; font-weight: 700; }
+      .plugin-icon.blue { border-color: rgba(143, 200, 255, .25); color: var(--blue); background: #1b2936; }
+      .plugin-icon.orange { border-color: rgba(243, 188, 120, .25); color: var(--orange); background: #33291d; }
+      .plugin-icon.purple { border-color: rgba(192, 170, 255, .25); color: #c5b0ff; background: #292338; }
+      .pin { width: 25px; height: 25px; display: grid; place-items: center; border: 0; border-radius: 5px; color: var(--faint); background: transparent; font-size: 14px; }
+      .pin:hover, .pin.pinned { color: var(--orange); background: rgba(243, 188, 120, .1); }
+      .plugin-card h3 { overflow: hidden; margin-bottom: 3px; font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+      .detail-link { display: block; width: 100%; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; }
+      .author { display: block; margin-bottom: 9px; color: var(--faint); font-size: 10px; }
+      .plugin-card p { display: -webkit-box; overflow: hidden; min-height: 34px; margin-bottom: 14px; color: var(--muted); font-size: 11px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+      .tag { padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--faint); font-size: 9px; }
+      .plugin-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .plugin-meta { color: var(--faint); font-size: 9px; }
+      .card-action { min-height: 29px; padding: 0 10px; border: 1px solid #4b8062; border-radius: 6px; color: var(--green); background: #1b3025; font-size: 10px; font-weight: 600; white-space: nowrap; }
+      .card-action:hover { background: #254532; }
+      .card-action.installed { border-color: var(--line); color: var(--muted); background: transparent; }
+      .card-action.updatable { border-color: #806441; color: var(--orange); background: #30271d; }
+      .empty-state { padding: 42px 20px; border: 1px dashed var(--line-strong); border-radius: 9px; color: var(--faint); text-align: center; font-size: 12px; }
+
+      .detail-panel { min-width: 0; overflow: auto; border-left: 1px solid var(--line); }
+      .detail-head { min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--line); }
+      .detail-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+      .mobile-close { display: none; }
+      .detail-scroll { padding: 22px 20px 30px; }
+      .detail-hero { display: flex; align-items: flex-start; gap: 12px; padding-bottom: 19px; border-bottom: 1px solid var(--line); }
+      .detail-hero .plugin-icon { width: 46px; height: 46px; font-size: 22px; }
+      .detail-hero h3 { margin: 2px 0 4px; font-size: 17px; letter-spacing: -.025em; }
+      .detail-hero p { margin: 0; color: var(--faint); font-size: 10px; }
+      .detail-section { padding: 18px 0; border-bottom: 1px solid var(--line); }
+      .detail-section h4 { margin: 0 0 10px; color: var(--faint); font-size: 10px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+      .detail-description { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+      .detail-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+      .detail-list li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+      .detail-list li i { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--green); }
+      .detail-list li.warn i { background: var(--orange); }
+      .detail-list li.danger i { background: var(--red); }
+      .permission { display: grid; grid-template-columns: 25px 1fr auto; align-items: center; gap: 9px; padding: 9px 0; }
+      .permission + .permission { border-top: 1px solid var(--line); }
+      .permission-icon { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 5px; color: var(--muted); background: var(--surface-2); font-size: 13px; }
+      .permission strong { display: block; font-size: 11px; font-weight: 550; }
+      .permission span { display: block; margin-top: 2px; color: var(--faint); font-size: 9px; }
+      .permission em { color: var(--orange); font-size: 9px; font-style: normal; }
+      .compatibility { display: grid; gap: 8px; }
+      .compat-row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 10px; }
+      .compat-row strong { color: var(--text); font-weight: 500; text-align: right; }
+      .compat-row .good { color: var(--green); }
+      .detail-actions { display: grid; gap: 8px; padding-top: 18px; }
+      .detail-actions button { width: 100%; min-height: 36px; }
+      .detail-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; color: var(--faint); font-size: 9px; }
+      .detail-footer button { padding: 0; border: 0; color: var(--faint); background: transparent; font-size: 9px; text-decoration: underline; }
+      .detail-footer button:hover { color: var(--text); }
+
+      .toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: 330px; padding: 11px 14px; border: 1px solid #4b6255; border-radius: 7px; color: var(--text); background: #1f3027; box-shadow: 0 14px 34px var(--shadow); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; font-size: 11px; }
+      .toast.visible { opacity: 1; transform: translateY(0); }
+      .modal { position: fixed; inset: 0; z-index: 15; display: grid; place-items: center; padding: 18px; background: rgba(5, 8, 9, .74); }
+      .modal-card { width: min(520px, 100%); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); box-shadow: 0 24px 70px var(--shadow); }
+      .modal-head { display: flex; justify-content: space-between; gap: 14px; padding: 19px 21px; border-bottom: 1px solid var(--line); }
+      .modal-head h2 { margin: 0; font-size: 16px; }
+      .modal-head p { margin: 4px 0 0; color: var(--faint); font-size: 10px; }
+      .modal-body { display: grid; gap: 16px; padding: 20px 21px 21px; }
+      .modal-section h3 { margin: 0 0 9px; color: var(--faint); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+      .modal-copy { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+      .modal-perms { border: 1px solid var(--line); border-radius: 7px; }
+      .modal-perms .permission { padding: 10px; }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+      .progress-wrap { display: grid; gap: 8px; }
+      .progress-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+      .progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: #26312e; }
+      .progress-bar { width: 0; height: 100%; border-radius: inherit; background: var(--green); transition: width .25s ease; }
+      .mobile-bar, .mobile-overlay { display: none; }
+
+      @media (max-width: 1120px) {
+        .workspace { grid-template-columns: 200px minmax(460px, 1fr); }
+        .detail-panel { display: none; }
+        .main-content { padding-right: 32px; padding-left: 32px; }
+      }
+      @media (max-width: 760px) {
+        .app-shell { grid-template-rows: 58px minmax(0, 1fr); }
+        .topbar { gap: 12px; padding: 0 15px; }
+        .brand { min-width: auto; }
+        .brand-copy span, .runtime, .shortcut { display: none; }
+        .topbar-search { width: auto; flex: 1; }
+        .topbar-spacer { display: none; }
+        .workspace { display: block; }
+        .sidebar { display: none; }
+        .main-content { min-height: calc(100vh - 58px); padding: 21px 16px 78px; }
+        .content-head { display: block; margin-bottom: 19px; }
+        .content-head h1 { font-size: 24px; }
+        .head-actions { margin-top: 14px; }
+        .hero { grid-template-columns: 1fr; min-height: 0; padding: 18px; margin-bottom: 19px; }
+        .hero h2 { font-size: 20px; }
+        .hero-visual { display: none; }
+        .toolbar { display: block; }
+        .tabs { width: 100%; margin-bottom: 11px; }
+        .tab { flex: 1; }
+        .sort { width: 100%; }
+        .filters { flex-wrap: nowrap; overflow: auto; padding-bottom: 2px; margin-right: -16px; }
+        .filter { flex: none; }
+        .plugin-grid { grid-template-columns: 1fr; }
+        .mobile-bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; display: flex; align-items: center; justify-content: space-around; min-height: 58px; padding: 5px 10px; border-top: 1px solid var(--line); background: rgba(20, 27, 30, .96); backdrop-filter: blur(15px); }
+        .mobile-nav { display: grid; gap: 2px; min-width: 64px; padding: 5px 7px; border: 0; border-radius: 6px; color: var(--faint); background: transparent; font-size: 9px; text-align: center; }
+        .mobile-nav span { font-size: 17px; }
+        .mobile-nav.active { color: var(--green); background: #1b3025; }
+        .detail-panel.mobile-open { position: fixed; inset: 0; z-index: 13; display: block; }
+        .mobile-close { display: inline-grid; }
+        .detail-head { padding: 0 16px; }
+        .detail-scroll { padding: 20px 16px 28px; }
+        .mobile-overlay { position: fixed; inset: 0; z-index: 12; display: block; background: rgba(5, 8, 9, .65); }
+      }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="返回 harndock">
+          <span class="brand-mark" aria-hidden="true">◇</span>
+          <span class="brand-copy">harndock<span>本地工作台</span></span>
+        </a>
+        <label class="topbar-search" aria-label="搜索插件">
+          <span aria-hidden="true">⌕</span>
+          <input id="search-input" type="search" placeholder="搜索插件、能力或作者" autocomplete="off" />
+          <span class="shortcut">⌘ K</span>
+        </label>
+        <span class="topbar-spacer"></span>
+        <div class="runtime"><i aria-hidden="true"></i><span>Harness 已连接</span><span class="shortcut">v0.1.2-alpha.1</span></div>
+        <button class="icon-button" type="button" id="settings-button" aria-label="打开设置" title="设置">⚙</button>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="插件中心导航">
+          <div class="nav-label">插件中心</div>
+          <nav class="nav-list" id="desktop-nav">
+            <button class="nav-item active" type="button" data-view="discover"><span class="nav-icon">⌂</span><span>发现插件</span><span class="nav-count">24</span></button>
+            <button class="nav-item" type="button" data-view="installed"><span class="nav-icon">▣</span><span>已安装</span><span class="nav-count">6</span></button>
+            <button class="nav-item" type="button" data-view="updates"><span class="nav-icon">↻</span><span>可更新</span><span class="nav-count alert">2</span></button>
+          </nav>
+          <div class="nav-label">管理</div>
+          <nav class="nav-list">
+            <button class="nav-item" type="button" data-toast="插件源管理将在接入远程市场后开放。"><span class="nav-icon">◉</span><span>插件源</span></button>
+            <button class="nav-item" type="button" id="local-settings"><span class="nav-icon">⚙</span><span>本地设置</span></button>
+          </nav>
+          <div class="local-card">
+            <div class="local-card-head"><strong>本地 Harness</strong><small>● 在线</small></div>
+            <div class="local-meta"><i aria-hidden="true"></i><span>用户级安装范围</span></div>
+            <div class="local-meta"><i aria-hidden="true"></i><span>插件目录已就绪</span></div>
+            <button type="button" data-toast="正式应用会打开本地 Harness 设置。">查看本地目录</button>
+          </div>
+        </aside>
+
+        <main class="main-content">
+          <div class="content-head">
+            <div><div class="eyebrow">Local extension store</div><h1 id="page-title">发现插件</h1><p id="page-subtitle">把能力直接装进当前的 harndock。</p></div>
+            <div class="head-actions"><button class="text-button" type="button" data-toast="本地导入支持将在安装协议确定后开放。">＋ 本地导入</button><button class="text-button" type="button" data-toast="插件中心帮助文档尚未接入。">帮助</button></div>
+          </div>
+
+          <section class="hero" aria-label="插件中心精选">
+            <div class="hero-copy"><div class="eyebrow">精选 · 本周推荐</div><h2>让 Harness 自动完成更多工作。</h2><p>从网页研究到项目记忆，挑选经过验证的能力，一键安装到你的本地 Runtime。</p><button class="hero-cta" type="button" data-select="web-research">查看网页研究助手 →</button></div>
+            <div class="hero-visual" aria-hidden="true"><div class="hero-window"><div class="hero-window-top"><span>PLUGIN INSTALLER</span><span>LOCAL</span></div><div class="hero-window-line"><i></i><span>网页研究助手</span><b>READY</b></div><div class="hero-window-line"><i></i><span>项目记忆库</span><b>INSTALLED</b></div><div class="hero-window-line"><i></i><span>代码审查员</span><b>UPDATE</b></div></div></div>
+          </section>
+
+          <div class="toolbar"><div class="tabs" role="tablist" aria-label="插件视图"><button class="tab active" type="button" data-view="discover">全部插件</button><button class="tab" type="button" data-view="installed">已安装</button><button class="tab" type="button" data-view="updates">可更新</button></div><select class="sort" id="sort-select" aria-label="排序"><option value="featured">排序：精选优先</option><option value="popular">排序：最受欢迎</option><option value="recent">排序：最近更新</option></select></div>
+          <div class="filters" id="filters" aria-label="插件分类"><button class="filter active" type="button" data-category="all">全部</button><button class="filter" type="button" data-category="research">研究与浏览</button><button class="filter" type="button" data-category="coding">开发工具</button><button class="filter" type="button" data-category="memory">记忆与知识</button><button class="filter" type="button" data-category="workflow">工作流</button></div>
+
+          <div class="section-title"><h2 id="grid-title">推荐插件</h2><span id="result-count">24 个插件</span></div>
+          <div class="plugin-grid" id="plugin-grid"></div>
+          <div class="empty-state" id="empty-state" hidden>没有找到匹配的插件</div>
+        </main>
+
+        <aside class="detail-panel" id="detail-panel" aria-label="插件详情">
+          <div class="detail-head"><h2>插件详情</h2><button class="icon-button mobile-close" type="button" id="detail-close" aria-label="关闭详情" title="关闭">×</button></div>
+          <div class="detail-scroll" id="detail-content"></div>
+        </aside>
+        <div class="mobile-overlay" id="mobile-overlay" hidden></div>
+      </div>
+      <nav class="mobile-bar" id="mobile-nav" aria-label="移动端导航"><button class="mobile-nav active" type="button" data-view="discover"><span>⌂</span>发现</button><button class="mobile-nav" type="button" data-view="installed"><span>▣</span>已安装</button><button class="mobile-nav" type="button" data-view="updates"><span>↻</span>更新</button><button class="mobile-nav" type="button" id="mobile-settings"><span>⚙</span>设置</button></nav>
+    </div>
+
+    <div class="modal" id="permission-modal" hidden>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="permission-title">
+        <div class="modal-head"><div><h2 id="permission-title">确认安装权限</h2><p id="permission-subtitle">网页研究助手 · v1.4.2</p></div><button class="icon-button" type="button" data-close-modal aria-label="关闭">×</button></div>
+        <div class="modal-body"><div class="modal-section"><h3>将安装到</h3><p class="modal-copy">当前用户的 harndock · `~/Library/Application Support/com.harndock.desktop/harness-home/profiles/desktop`</p></div><div class="modal-section"><h3>插件请求以下权限</h3><div class="modal-perms" id="modal-permissions"></div></div><div class="modal-section"><h3>安装前检查</h3><p class="modal-copy">✓ Harness 版本兼容　 ✓ 来源已验证　 ✓ 安装目录可写</p></div><div class="modal-actions"><button class="text-button" type="button" data-close-modal>取消</button><button class="primary-button" type="button" id="confirm-install">确认安装</button></div><div class="progress-wrap" id="progress-wrap" hidden><div class="progress-label"><span id="progress-label">正在准备安装…</span><span id="progress-percent">0%</span></div><div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div></div></div>
+      </section>
+    </div>
+    <div class="modal" id="settings-modal" hidden>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="modal-head"><div><h2 id="settings-title">插件中心设置</h2><p>管理本地安装偏好和插件源</p></div><button class="icon-button" type="button" data-close-modal aria-label="关闭">×</button></div><div class="modal-body"><div class="modal-section"><h3>安装范围</h3><p class="modal-copy">当前用户　<span style="color:var(--green)">● 默认</span><br />插件会安装到当前用户的 Harness 配置目录，不影响其他用户。</p></div><div class="modal-section"><h3>更新策略</h3><p class="modal-copy">自动检查更新　 <span style="color:var(--green)">已开启</span><br />每次启动 Harness 时检查已安装插件的兼容版本。</p></div><div class="modal-actions"><button class="primary-button" type="button" data-close-modal>完成</button></div></div></section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const plugins = [
+        { id: 'web-research', name: '网页研究助手', author: 'harndock Labs', icon: '⌁', category: 'research', tags: ['网页抓取', '引用整理'], description: '让 Harness 具备结构化网页研究能力，自动提炼要点并保留来源。', version: '1.4.2', downloads: '12.8k', updated: '3 天前', state: 'available', featured: true, permissions: [['▤', '读取项目文件', '用于建立研究上下文'], ['◎', '访问网络', '抓取公开网页内容'], ['⌘', '执行命令', '不需要']] },
+        { id: 'project-memory', name: '项目记忆库', author: 'harndock-community', icon: '◈', category: 'memory', tags: ['知识库', '本地索引'], description: '为每个项目维护可搜索的长期记忆，让上下文在不同 Session 间持续。', version: '0.9.8', downloads: '9.4k', updated: '1 周前', state: 'installed', featured: true, permissions: [['▤', '读取项目文件', '建立本地索引'], ['⌘', '执行命令', '索引后台任务']] },
+        { id: 'code-review', name: '代码审查员', author: 'harndock Labs', icon: '⌘', category: 'coding', tags: ['代码质量', 'Diff'], description: '针对当前变更生成分层审查意见，优先指出风险、回归和测试缺口。', version: '2.1.0', downloads: '18.2k', updated: '昨天', state: 'update', permissions: [['▤', '读取项目文件', '读取 Git 工作树'], ['⌘', '执行命令', '运行项目检查']] },
+        { id: 'workflow-runner', name: '工作流编排器', author: 'Flow Foundry', icon: '↗', category: 'workflow', tags: ['自动化', '任务流'], description: '把重复的多步操作组合成可复用工作流，在本地 Harness 中按需触发。', version: '1.1.3', downloads: '7.1k', updated: '2 周前', state: 'available', permissions: [['⌘', '执行命令', '执行工作流步骤'], ['▤', '读取项目文件', '读取输入文件']] },
+        { id: 'sql-explorer', name: 'SQL 探索器', author: 'Data Tools', icon: '◫', category: 'coding', tags: ['数据库', '查询'], description: '连接本地开发数据库，解释查询结果并协助生成安全的 SQL 变更。', version: '0.8.6', downloads: '4.3k', updated: '5 天前', state: 'available', permissions: [['◎', '访问网络', '连接配置的数据源'], ['▤', '读取项目文件', '读取 schema 文件']] },
+        { id: 'meeting-notes', name: '会议整理器', author: 'harndock-community', icon: '≡', category: 'memory', tags: ['摘要', '知识库'], description: '把会议记录整理为决策、行动项和待确认问题，并同步到项目记忆。', version: '1.0.4', downloads: '6.8k', updated: '3 周前', state: 'installed', permissions: [['▤', '读取项目文件', '读取会议记录'], ['⌘', '执行命令', '不需要']] },
+        { id: 'issue-triage', name: 'Issue 分诊台', author: 'Open Source Lab', icon: '!', category: 'workflow', tags: ['GitHub', '分类'], description: '分析 issue 内容、识别重复问题并给出优先级与负责范围建议。', version: '1.3.1', downloads: '5.2k', updated: '4 天前', state: 'available', permissions: [['◎', '访问网络', '访问代码托管平台'], ['⌘', '执行命令', '不需要']] },
+        { id: 'image-brief', name: '视觉简报', author: 'Canvas Works', icon: '✦', category: 'research', tags: ['图片理解', '报告'], description: '从图片和截图中提取结构化信息，为 Session 生成简洁的视觉简报。', version: '0.7.5', downloads: '3.9k', updated: '1 个月前', state: 'available', permissions: [['▤', '读取项目文件', '读取图片输入'], ['◎', '访问网络', '不需要']] }
+      ];
+
+      let activeView = 'discover';
+      let activeCategory = 'all';
+      let selectedId = 'web-research';
+      let toastTimer;
+
+      const grid = document.querySelector('#plugin-grid');
+      const emptyState = document.querySelector('#empty-state');
+      const searchInput = document.querySelector('#search-input');
+      const detailPanel = document.querySelector('#detail-panel');
+      const mobileOverlay = document.querySelector('#mobile-overlay');
+      const permissionModal = document.querySelector('#permission-modal');
+      const settingsModal = document.querySelector('#settings-modal');
+      const toast = document.querySelector('#toast');
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('visible');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove('visible'), 2600);
+      }
+
+      function filteredPlugins() {
+        const query = searchInput.value.trim().toLowerCase();
+        return plugins.filter(plugin => {
+          const matchesView = activeView === 'discover' || (activeView === 'installed' ? ['installed', 'disabled', 'update'].includes(plugin.state) : plugin.state === 'update');
+          const matchesCategory = activeCategory === 'all' || plugin.category === activeCategory;
+          const haystack = [plugin.name, plugin.author, plugin.description, ...plugin.tags].join(' ').toLowerCase();
+          return matchesView && matchesCategory && haystack.includes(query);
+        });
+      }
+
+      function actionLabel(plugin) {
+        if (plugin.state === 'installed') return '已安装';
+        if (plugin.state === 'disabled') return '已停用';
+        if (plugin.state === 'update') return '更新';
+        return '安装';
+      }
+
+      function renderGrid() {
+        const results = filteredPlugins();
+        const sort = document.querySelector('#sort-select').value;
+        if (sort === 'popular') results.sort((a, b) => Number(b.downloads.replace('k', '')) - Number(a.downloads.replace('k', '')));
+        if (sort === 'recent') results.sort((a, b) => a.updated.localeCompare(b.updated, 'zh-CN'));
+        grid.innerHTML = results.map(plugin => `<article class="plugin-card ${plugin.id === selectedId ? 'selected' : ''}" data-plugin="${plugin.id}">
+          <div class="plugin-top"><button class="plugin-icon ${plugin.category === 'coding' ? 'blue' : plugin.category === 'workflow' ? 'orange' : plugin.category === 'memory' ? 'purple' : ''}" type="button" data-select="${plugin.id}" aria-label="查看 ${plugin.name}">${plugin.icon}</button><button class="pin ${plugin.id === 'project-memory' ? 'pinned' : ''}" type="button" data-pin="${plugin.id}" aria-label="收藏 ${plugin.name}" title="收藏">⌖</button></div>
+          <button class="detail-link" type="button" data-select="${plugin.id}"><h3>${plugin.name}</h3><span class="author">${plugin.author}</span></button>
+          <p>${plugin.description}</p><div class="tag-row">${plugin.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+          <div class="plugin-bottom"><span class="plugin-meta">v${plugin.version} · ${plugin.downloads} 安装</span><button class="card-action ${plugin.state === 'installed' || plugin.state === 'disabled' ? 'installed' : plugin.state === 'update' ? 'updatable' : ''}" type="button" ${plugin.state === 'installed' || plugin.state === 'disabled' ? `data-select="${plugin.id}"` : `data-install="${plugin.id}"`}>${actionLabel(plugin)}</button></div>
+        </article>`).join('');
+        emptyState.hidden = results.length > 0;
+        document.querySelector('#result-count').textContent = `${results.length} 个插件`;
+        document.querySelector('#grid-title').textContent = activeView === 'installed' ? '已安装插件' : activeView === 'updates' ? '待处理更新' : '推荐插件';
+      }
+
+      function renderDetail() {
+        const plugin = plugins.find(item => item.id === selectedId) || plugins[0];
+        const action = plugin.state === 'installed' ? '<button class="primary-button" type="button" data-toggle="' + plugin.id + '">✓ 已启用</button>' : plugin.state === 'disabled' ? '<button class="primary-button" type="button" data-toggle="' + plugin.id + '">启用插件</button>' : '<button class="primary-button" type="button" data-install="' + plugin.id + '">' + (plugin.state === 'update' ? '↻ 更新到 v' + plugin.version : '↓ 安装到 Harness') + '</button>';
+        document.querySelector('#detail-content').innerHTML = `<div class="detail-hero"><div class="plugin-icon ${plugin.category === 'coding' ? 'blue' : plugin.category === 'workflow' ? 'orange' : plugin.category === 'memory' ? 'purple' : ''}">${plugin.icon}</div><div><h3>${plugin.name}</h3><p>${plugin.author} · v${plugin.version}</p></div></div>
+          <section class="detail-section"><h4>关于此插件</h4><p class="detail-description">${plugin.description}它会作为本地插件加载到当前 Harness Runtime，不会修改上游 Harness 源码。</p></section>
+          <section class="detail-section"><h4>插件能力</h4><ul class="detail-list"><li><i></i>在当前 Session 中按需调用</li><li><i></i>支持本地配置和独立日志</li><li><i></i>安装失败可恢复到上一个版本</li></ul></section>
+          <section class="detail-section"><h4>权限</h4>${plugin.permissions.map(permission => `<div class="permission"><div class="permission-icon">${permission[0]}</div><div><strong>${permission[1]}</strong><span>${permission[2]}</span></div><em>${permission[1] === '执行命令' && permission[2] === '不需要' ? '不需要' : '必要'}</em></div>`).join('')}</section>
+          <section class="detail-section"><h4>兼容性</h4><div class="compatibility"><div class="compat-row"><span>harndock</span><strong class="good">兼容 · >= 0.1.0</strong></div><div class="compat-row"><span>安装范围</span><strong>当前用户</strong></div><div class="compat-row"><span>最近更新</span><strong>${plugin.updated}</strong></div></div></section>
+          <div class="detail-actions">${action}<button class="text-button" type="button" data-toast="正式应用会打开 ${plugin.name} 的配置页面。">⚙ 配置插件</button></div><div class="detail-footer"><span>${plugin.downloads} 次安装</span><button type="button" data-toast="更新日志将在接入插件源后展示。">查看更新日志 ↗</button></div>`;
+      }
+
+      function setView(view) {
+        activeView = view;
+        document.querySelectorAll('[data-view]').forEach(item => item.classList.toggle('active', item.dataset.view === view));
+        if (view !== 'discover') activeCategory = 'all';
+        document.querySelectorAll('.filter').forEach(item => item.classList.toggle('active', item.dataset.category === activeCategory));
+        document.querySelector('#page-title').textContent = view === 'installed' ? '已安装' : view === 'updates' ? '可更新' : '发现插件';
+        document.querySelector('#page-subtitle').textContent = view === 'installed' ? '管理已经装进本地 Harness 的能力。' : view === 'updates' ? '保持本地插件与当前 Runtime 兼容。' : '把能力直接装进当前的 harndock。';
+        renderGrid();
+      }
+
+      function openDetail(id) {
+        selectedId = id;
+        renderGrid();
+        renderDetail();
+        if (window.matchMedia('(max-width: 760px)').matches) { detailPanel.classList.add('mobile-open'); mobileOverlay.hidden = false; }
+      }
+
+      function openInstall(id) {
+        const plugin = plugins.find(item => item.id === id);
+        if (!plugin) return;
+        selectedId = id;
+        renderDetail();
+        document.querySelector('#permission-subtitle').textContent = `${plugin.name} · v${plugin.version}`;
+        document.querySelector('#modal-permissions').innerHTML = plugin.permissions.map(permission => `<div class="permission"><div class="permission-icon">${permission[0]}</div><div><strong>${permission[1]}</strong><span>${permission[2]}</span></div><em>${permission[1] === '执行命令' && permission[2] === '不需要' ? '不需要' : '必要'}</em></div>`).join('');
+        permissionModal.hidden = false;
+        document.querySelector('#progress-wrap').hidden = true;
+        document.querySelector('#confirm-install').hidden = false;
+      }
+
+      document.addEventListener('click', event => {
+        const target = event.target.closest('[data-select], [data-install], [data-pin], [data-view], [data-toast], [data-toggle]');
+        if (!target) return;
+        if (target.dataset.select) openDetail(target.dataset.select);
+        if (target.dataset.install) openInstall(target.dataset.install);
+        if (target.dataset.pin) { target.classList.toggle('pinned'); showToast(target.classList.contains('pinned') ? '已加入收藏' : '已取消收藏'); }
+        if (target.dataset.view) setView(target.dataset.view);
+        if (target.dataset.toggle) { const plugin = plugins.find(item => item.id === target.dataset.toggle); plugin.state = plugin.state === 'installed' ? 'disabled' : 'installed'; renderGrid(); renderDetail(); showToast(plugin.state === 'installed' ? '插件已启用' : '插件已停用'); }
+        if (target.dataset.toast) showToast(target.dataset.toast);
+      });
+      document.querySelector('#filters').addEventListener('click', event => { const filter = event.target.closest('.filter'); if (!filter) return; activeCategory = filter.dataset.category; document.querySelectorAll('.filter').forEach(item => item.classList.toggle('active', item === filter)); renderGrid(); });
+      searchInput.addEventListener('input', renderGrid);
+      document.querySelector('#sort-select').addEventListener('change', renderGrid);
+      document.querySelector('.hero-cta').addEventListener('click', () => openDetail('web-research'));
+      document.querySelector('#settings-button').addEventListener('click', () => settingsModal.hidden = false);
+      document.querySelector('#local-settings').addEventListener('click', () => settingsModal.hidden = false);
+      document.querySelector('#mobile-settings').addEventListener('click', () => settingsModal.hidden = false);
+      document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', () => { permissionModal.hidden = true; settingsModal.hidden = true; }));
+      document.querySelector('#confirm-install').addEventListener('click', () => {
+        const plugin = plugins.find(item => item.id === selectedId);
+        const button = document.querySelector('#confirm-install');
+        const progressWrap = document.querySelector('#progress-wrap');
+        const progressBar = document.querySelector('#progress-bar');
+        const progressPercent = document.querySelector('#progress-percent');
+        const progressLabel = document.querySelector('#progress-label');
+        button.hidden = true; progressWrap.hidden = false;
+        let progress = 0;
+        const timer = window.setInterval(() => { progress += 25; progressBar.style.width = `${progress}%`; progressPercent.textContent = `${progress}%`; progressLabel.textContent = progress < 100 ? ['正在下载插件包…', '校验插件来源…', '写入本地目录…'][Math.floor(progress / 25) - 1] : '安装完成'; if (progress >= 100) { window.clearInterval(timer); plugin.state = 'installed'; renderGrid(); renderDetail(); window.setTimeout(() => { permissionModal.hidden = true; showToast(`${plugin.name} 已安装到本地 Harness`); }, 450); } }, 260);
+      });
+      document.querySelector('#detail-close').addEventListener('click', () => { detailPanel.classList.remove('mobile-open'); mobileOverlay.hidden = true; });
+      mobileOverlay.addEventListener('click', () => { detailPanel.classList.remove('mobile-open'); mobileOverlay.hidden = true; });
+      document.addEventListener('keydown', event => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); searchInput.focus(); } if (event.key === 'Escape') { permissionModal.hidden = true; settingsModal.hidden = true; detailPanel.classList.remove('mobile-open'); mobileOverlay.hidden = true; } });
+
+      renderGrid();
+      renderDetail();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+T4-10 ANDROID VISUAL PASS - 320dp, 390dp, 768dp, keyboard, settings entry, system back, and accessibility tree verified.
+T7-04 PASS - Mobile Device registration and MP-05 account/device/scope diagnostics verified.
+T7-08 PASS - revoked Device invalidated the old session; re-login created a new active Device while old Devices remained revoked.
+T7-03 PASS - forced access expiry triggered refresh rotation; the app stayed authenticated, the old access/auth session was revoked, and exactly one active session remained.
+T7-06 PASS - during Mobile force-stop, real PC Harness produced T7_OFFLINE_REPLAY_OK; Connector restored the persisted gap and Gateway received contiguous seq 42-92 (51 unique events), then Mobile cold-start rendered the reply.
+T7-07 PARTIAL - prompt/cancel passed; real approval first-wins/already-decided still needs a stable Desktop Harness approval/requested event.

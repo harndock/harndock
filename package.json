@@ -1,0 +1,39 @@
+{
+  "name": "@harndock/root",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": "22.22.3"
+  },
+  "scripts": {
+    "dev": "pnpm build:plugins && pnpm --filter @harndock/desktop tauri dev",
+    "build": "pnpm build:plugins && pnpm --filter @harndock/desktop tauri build --config src-tauri/tauri.release.conf.json",
+    "build:plugins": "pnpm --filter @harndock/sync-protocol build && pnpm --filter @harndock/remote-sync build && pnpm --filter @harndock/client-desktop build && pnpm --filter @harndock/runtime-bridge build && pnpm --filter @harndock/desktop-bundle build",
+    "build:runtime": "pnpm build:plugins && node scripts/build-harness-runtime.mjs",
+    "build:web": "pnpm --filter @harndock/desktop build",
+    "check:bundled-runtime": "node scripts/verify-bundled-runtime.mjs",
+    "typecheck": "pnpm --filter @harndock/desktop typecheck",
+    "check:harness-lock": "node scripts/verify-harness-lock.mjs",
+    "check:runtime-contract": "node scripts/verify-runtime-contract.mjs",
+    "check:runtime-builder": "node --check scripts/build-harness-runtime.mjs && node --check scripts/verify-harness-runtime.mjs && node --check scripts/verify-bundled-runtime.mjs",
+    "check:docs": "node scripts/verify-docs.mjs",
+    "check:i18n": "node scripts/verify-i18n.mjs",
+    "check:runtime-adapter": "node --check scripts/dev-harness-runtime.mjs",
+    "check:sync-protocol": "pnpm --filter @harndock/sync-protocol test",
+    "check:remote-sync": "pnpm --filter @harndock/remote-sync test",
+    "check:plugins": "pnpm build:plugins && node scripts/verify-desktop-plugins.mjs",
+    "test:desktop-profile": "node scripts/test-desktop-profile.mjs",
+    "test:runtime-bridge": "node scripts/test-runtime-bridge.mjs",
+    "check:security": "node scripts/verify-tauri-security.mjs",
+    "check:rust": "cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "check:rust:fmt": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --check",
+    "test:rust": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "check": "pnpm check:harness-lock && pnpm check:runtime-contract && pnpm check:runtime-builder && pnpm check:docs && pnpm check:i18n && pnpm check:runtime-adapter && pnpm check:sync-protocol && pnpm check:remote-sync && pnpm check:plugins && pnpm test:runtime-bridge && pnpm test:desktop-profile && pnpm check:security && pnpm typecheck && pnpm check:rust && pnpm check:rust:fmt && pnpm test:rust"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1"
+  },
+  "homepage": "https://harndock.com"
+}

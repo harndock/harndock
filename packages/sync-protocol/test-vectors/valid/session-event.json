@@ -1,0 +1,21 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JSESSION",
+  "kind": "session.event",
+  "accountId": "acct_demo",
+  "deviceId": "dev_pc",
+  "runtimeId": "runtime_mac_01",
+  "sessionId": "session_sync",
+  "seq": 129,
+  "eventType": "future/event",
+  "sentAt": "2026-08-18T09:30:00.000Z",
+  "payload": {
+    "event": {
+      "type": "future/event",
+      "seq": 129,
+      "time": 1787045400000,
+      "data": { "newField": true },
+      "futureMetadata": "must survive"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_invalid_ack",
+  "kind": "event.ack",
+  "sessionId": "session_sync",
+  "seq": 129,
+  "sentAt": "2026-08-18T09:30:01.000Z",
+  "payload": {}
+}

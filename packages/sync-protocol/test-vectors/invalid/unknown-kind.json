@@ -1,0 +1,8 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_invalid_kind",
+  "kind": "session.unknown",
+  "sessionId": "session_sync",
+  "sentAt": "2026-08-18T09:30:00.000Z",
+  "payload": {}
+}

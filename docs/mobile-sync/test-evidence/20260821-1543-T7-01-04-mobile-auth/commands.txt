@@ -1,0 +1,10 @@
+adb devices -l
+adb -s 127.0.0.1:5555 reverse tcp:8081 tcp:8081
+adb -s 127.0.0.1:5555 reverse tcp:8082 tcp:8082
+adb -s 127.0.0.1:5555 install -r apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+EXPO_PUBLIC_GATEWAY_DEFAULT_URL=http://127.0.0.1:8081 EXPO_PUBLIC_GATEWAY_PROTOCOLS=http,https pnpm --filter @dsh-gui/mobile exec expo start --dev-client --localhost --port 8082 --clear
+pnpm --filter @dsh-gui/mobile test
+pnpm --filter @dsh-gui/mobile typecheck
+
+# Auth、Device 和 token 生命周期使用真实 Gateway REST API 执行。
+# 凭据由 macOS Keychain 注入进程，原始值和 Authorization header 未写入证据。

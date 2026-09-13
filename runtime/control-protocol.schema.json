@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harndock.com/schemas/runtime-control-v1.json",
+  "title": "harndock Runtime control frame v1",
+  "$defs": {
+    "protocolVersion": { "const": 1 },
+    "nonce": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "runtimeVersion": { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[1-9][0-9]*$" },
+    "runtimeApi": { "type": "integer", "minimum": 1 },
+    "profile": { "const": "desktop" },
+    "harnessCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "event", "nonce", "runtimeVersion", "runtimeApi", "profile", "harnessCommit", "url", "authenticatedUrl"],
+      "properties": {
+        "protocolVersion": { "$ref": "#/$defs/protocolVersion" },
+        "event": { "const": "ready" },
+        "nonce": { "$ref": "#/$defs/nonce" },
+        "runtimeVersion": { "$ref": "#/$defs/runtimeVersion" },
+        "runtimeApi": { "$ref": "#/$defs/runtimeApi" },
+        "profile": { "$ref": "#/$defs/profile" },
+        "harnessCommit": { "$ref": "#/$defs/harnessCommit" },
+        "url": { "type": "string", "pattern": "^http://127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])/$" },
+        "authenticatedUrl": { "type": "string", "pattern": "^http://127\\.0\\.0\\.1:(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])/?\\?token=[A-Za-z0-9_-]{43}$" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "event", "nonce", "runtimeVersion", "runtimeApi", "profile", "harnessCommit"],
+      "properties": {
+        "protocolVersion": { "$ref": "#/$defs/protocolVersion" },
+        "event": { "const": "showSettings" },
+        "nonce": { "$ref": "#/$defs/nonce" },
+        "runtimeVersion": { "$ref": "#/$defs/runtimeVersion" },
+        "runtimeApi": { "$ref": "#/$defs/runtimeApi" },
+        "profile": { "$ref": "#/$defs/profile" },
+        "harnessCommit": { "$ref": "#/$defs/harnessCommit" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "event", "nonce", "runtimeVersion", "runtimeApi", "profile", "harnessCommit", "connectionState", "observedAtMs", "lastHeartbeatAtMs"],
+      "properties": {
+        "protocolVersion": { "$ref": "#/$defs/protocolVersion" },
+        "event": { "const": "remoteSyncStatus" },
+        "nonce": { "$ref": "#/$defs/nonce" },
+        "runtimeVersion": { "$ref": "#/$defs/runtimeVersion" },
+        "runtimeApi": { "$ref": "#/$defs/runtimeApi" },
+        "profile": { "$ref": "#/$defs/profile" },
+        "harnessCommit": { "$ref": "#/$defs/harnessCommit" },
+        "connectionState": { "enum": ["stopped", "connecting", "handshaking", "connected", "reconnecting"] },
+        "observedAtMs": { "type": "integer", "minimum": 0 },
+        "lastHeartbeatAtMs": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    }
+  ]
+}
