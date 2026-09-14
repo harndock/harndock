@@ -1,5 +1,0 @@
-T7-01 PASS - ADB online; APK installed; Metro bundle loaded; Pairing rendered; app PID log clean.
-T7-02 PASS - HTTPS accepted; loopback HTTP connected; path origin rejected; unreachable origin reported reconnect/error.
-T7-03 PASS - register 201; login 200; refresh 200; logout 204; invalidated credentials 401.
-T7-04 PASS - Mobile Device reused; token summary redacted; revoke 204; revoked token 401; relogin connected.
-Cleanup PASS - temporary account deleted; active sessions/tokens 0; BlueStacks SecureStore cleared.

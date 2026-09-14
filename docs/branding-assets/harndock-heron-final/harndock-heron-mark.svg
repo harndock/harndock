@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Harndock heron mark</title>
-  <desc id="desc">A geometric heron with an S-curve neck above a dock line</desc>
-  <path d="M121 316c36-80 105-117 187-99 54 12 92 47 108 99-50 29-107 36-161 16-45-17-89-22-134-16Z" fill="#161D45"/>
-  <path d="M279 229c-59-8-92-49-86-104 5-46 41-81 84-81 36 0 62 23 62 53 0 28-23 50-51 50h-47" fill="none" stroke="#161D45" stroke-width="30" stroke-linecap="round"/>
-  <path d="m334 62 127 28-123 29c14-19 13-38-4-57Z" fill="#5267C8"/>
-  <path d="M76 400h351" fill="none" stroke="#3F4FB5" stroke-width="14" stroke-linecap="round"/>
-</svg>
