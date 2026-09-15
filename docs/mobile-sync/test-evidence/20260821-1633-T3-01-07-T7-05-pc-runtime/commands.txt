@@ -1,0 +1,15 @@
+adb devices -l
+adb -s 127.0.0.1:5555 reverse --list
+pnpm build:runtime
+pnpm check:bundled-runtime
+pnpm build
+pnpm --filter @dsh-gui/desktop typecheck
+pnpm --filter @dsh-gui/mobile typecheck
+pnpm --filter @dsh-gui/mobile test
+pnpm check:remote-sync
+cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
+cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
+pnpm check
+
+# Pairing、inventory、heartbeat、logout 和清理使用真实本地 Gateway 执行。
+# 原始凭据只从权限为 0600 的临时文件注入进程，未写入本证据。

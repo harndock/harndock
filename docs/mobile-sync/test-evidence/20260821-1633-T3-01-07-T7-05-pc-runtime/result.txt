@@ -1,0 +1,10 @@
+T3-01 PASS - config mode 0600; no token/private/secret/password fields.
+T3-02 PASS - one-time pairing created the PC Device and desktop Runtime; Ed25519 connector registered.
+T3-03 PASS - Keychain item existed after pairing and was removed by unpair.
+T3-04 PASS - Runtime online; device onlineRuntimeCount 1; heartbeat advanced; control ready EAGAIN fixed and release startup repeated successfully.
+T3-05 PASS - snapshot/event/ack/outbox/cursor automated coverage passed.
+T3-06 PASS - Harness control adapter automated coverage passed.
+T3-07 PASS - native settings menu, paired state, explicit two-step unpair, and local cleanup verified in release app.
+T7-05 PASS - BlueStacks showed Gateway connected, Mac Desktop T3 online, desktop Runtime online, and heartbeat.
+Cleanup PASS - mobile SecureStore, desktop config/outbox/Keychain, Auth session, and exact temporary account removed.
+Checks PASS - pnpm check; Mobile 24/24; Remote Sync 10/10; Rust 17 passed and 1 artifact test ignored; bundled Runtime verified; diff check clean.

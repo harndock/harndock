@@ -1,0 +1,3 @@
+T7-03/T7-04 API PREREQUISITE PASS - login, profile, device/runtime inventory, and logout completed on Gateway 7019.
+T7 LATEST RN UI BLOCKED - BlueStacks ADB file-sync and Android System UI were unstable; APK installation did not complete.
+T7-06/T7-07/T7-08 NOT RUN - no latest Development Build was available inside the device.

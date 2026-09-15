@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7fa" />
+    <title>Harndock · Plugin Center V2 Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #18202a;
+        background: #f5f7fa;
+        --canvas: #f5f7fa;
+        --surface: #ffffff;
+        --surface-soft: #eef2f6;
+        --ink: #18202a;
+        --muted: #667386;
+        --faint: #929cab;
+        --line: #dfe5ec;
+        --line-strong: #c8d1dc;
+        --brand: #315fd6;
+        --brand-dark: #2147a8;
+        --brand-soft: #edf2ff;
+        --green: #20865d;
+        --green-soft: #eaf7f0;
+        --amber: #aa6b19;
+        --amber-soft: #fff6e5;
+        --danger: #bf4d58;
+        --shadow: 0 12px 32px rgba(28, 39, 54, 0.1);
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 320px; min-height: 100%; }
+      body { min-height: 100vh; margin: 0; background: var(--canvas); line-height: 1.5; }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+      [hidden] { display: none !important; }
+
+      .app-shell { min-height: 100vh; display: grid; grid-template-rows: 58px minmax(0, 1fr); }
+      .titlebar { display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.96); }
+      .traffic { display: flex; gap: 7px; margin-right: 2px; }
+      .traffic i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+      .traffic i:nth-child(2) { background: #febc2e; }
+      .traffic i:nth-child(3) { background: #28c840; }
+      .product-mark { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; color: #fff; background: #315fd6; font-weight: 750; }
+      .product { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+      .product strong { font-size: 14px; }
+      .product span { color: var(--muted); font-size: 11px; }
+      .titlebar-spacer { flex: 1; }
+      .runtime { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+      .runtime i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+      .icon-button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: var(--surface); }
+      .icon-button:hover { color: var(--ink); border-color: var(--line-strong); background: var(--surface-soft); }
+
+      .workspace { min-height: 0; display: grid; grid-template-columns: 212px minmax(0, 1fr); }
+      .sidebar { display: flex; flex-direction: column; padding: 22px 12px 14px; border-right: 1px solid var(--line); background: #f9fafc; }
+      .side-title { padding: 0 10px 18px; color: var(--faint); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+      .side-nav { display: grid; gap: 4px; }
+      .side-nav button { min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 11px; border: 0; border-radius: 6px; color: #4f5a68; background: transparent; font-size: 12px; text-align: left; }
+      .side-nav button:hover { background: #eef2f6; }
+      .side-nav button.active { color: var(--brand-dark); background: var(--brand-soft); font-weight: 650; }
+      .nav-icon { width: 20px; color: #7a8796; font-size: 15px; text-align: center; }
+      .side-nav button.active .nav-icon { color: var(--brand); }
+      .nav-badge { margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: 999px; color: #fff; background: var(--brand); font-size: 9px; text-align: center; }
+      .sidebar-foot { margin-top: auto; padding: 13px 10px 0; border-top: 1px solid var(--line); }
+      .sidebar-foot strong { display: block; font-size: 11px; }
+      .sidebar-foot span { display: block; margin-top: 3px; color: var(--faint); font-size: 9px; }
+
+      .main { min-width: 0; overflow: auto; background: var(--canvas); }
+      .page { width: min(1180px, calc(100% - 56px)); margin: 0 auto; padding: 34px 0 70px; }
+      .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+      .eyebrow { margin: 0 0 5px; color: var(--green); font-size: 9px; font-weight: 750; text-transform: uppercase; }
+      .page-header h1 { margin: 0; font-size: 27px; line-height: 1.2; }
+      .page-header p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+      .header-actions { display: flex; gap: 8px; }
+      .btn { min-height: 34px; padding: 0 13px; border: 1px solid var(--line-strong); border-radius: 6px; color: #4d5968; background: var(--surface); font-size: 11px; font-weight: 550; }
+      .btn:hover { border-color: #9eabb9; background: var(--surface-soft); }
+      .btn.primary { border-color: var(--brand); color: #fff; background: var(--brand); }
+      .btn.primary:hover { border-color: var(--brand-dark); background: var(--brand-dark); }
+      .btn.success { border-color: #b8dfcc; color: var(--green); background: var(--green-soft); }
+
+      .carousel { position: relative; min-height: 286px; overflow: hidden; margin-bottom: 25px; border-radius: 8px; background: #17203a; box-shadow: var(--shadow); }
+      .slide { position: absolute; inset: 0; display: grid; align-items: end; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+      .slide.active { opacity: 1; pointer-events: auto; }
+      .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .slide::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11, 17, 31, 0.92) 0%, rgba(11, 17, 31, 0.58) 42%, rgba(11, 17, 31, 0.08) 76%); content: ""; }
+      .slide-content { position: relative; z-index: 1; width: min(540px, 72%); padding: 34px 42px 38px; color: #fff; }
+      .slide-kicker { display: inline-flex; align-items: center; min-height: 23px; margin-bottom: 13px; padding: 0 8px; border: 1px solid rgba(255, 255, 255, 0.26); border-radius: 4px; background: rgba(255, 255, 255, 0.1); font-size: 9px; font-weight: 700; text-transform: uppercase; }
+      .slide h2 { margin: 0 0 8px; font-size: 28px; line-height: 1.15; }
+      .slide p { margin: 0 0 20px; color: rgba(255, 255, 255, 0.82); font-size: 12px; }
+      .slide .btn { border-color: #fff; color: #17203a; background: #fff; }
+      .carousel-control { position: absolute; z-index: 2; top: 50%; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; color: #fff; background: rgba(10, 15, 26, 0.35); transform: translateY(-50%); }
+      .carousel-control:hover { background: rgba(10, 15, 26, 0.72); }
+      .carousel-control.prev { left: 12px; }
+      .carousel-control.next { right: 12px; }
+      .carousel-dots { position: absolute; z-index: 2; right: 22px; bottom: 17px; display: flex; gap: 6px; }
+      .carousel-dots button { width: 18px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: rgba(255, 255, 255, 0.4); }
+      .carousel-dots button.active { width: 30px; background: #fff; }
+
+      .toolbar { display: grid; grid-template-columns: minmax(260px, 1fr) auto; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+      .search { min-height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); }
+      .search span { color: var(--faint); font-size: 17px; }
+      .search input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 12px; }
+      .search input::placeholder { color: #a3acb9; }
+      .filters { display: flex; gap: 7px; }
+      .filters select { min-height: 40px; padding: 0 30px 0 11px; border: 1px solid var(--line-strong); border-radius: 6px; color: #526071; background: var(--surface); font-size: 11px; }
+      .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 12px; }
+      .section-heading h2 { margin: 0; font-size: 15px; }
+      .section-heading span { color: var(--faint); font-size: 10px; }
+
+      .plugin-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .plugin-card { display: grid; grid-template-rows: auto auto 1fr auto; min-height: 255px; padding: 17px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease; }
+      .plugin-card:hover { border-color: #aab8ca; box-shadow: 0 8px 22px rgba(31, 49, 74, 0.08); transform: translateY(-2px); }
+      .plugin-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+      .plugin-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 7px; color: var(--brand); background: var(--brand-soft); font-size: 19px; font-weight: 700; }
+      .plugin-icon.green { color: var(--green); background: var(--green-soft); }
+      .plugin-icon.amber { color: var(--amber); background: var(--amber-soft); }
+      .status-pill { min-height: 22px; display: inline-flex; align-items: center; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--faint); background: #fafbfd; font-size: 8px; white-space: nowrap; }
+      .status-pill.installed { border-color: #bfe2d0; color: var(--green); background: var(--green-soft); }
+      .status-pill.update { border-color: #ecd3a8; color: var(--amber); background: var(--amber-soft); }
+      .plugin-card h3 { margin: 0 0 3px; font-size: 14px; }
+      .plugin-meta { color: var(--faint); font-size: 9px; }
+      .plugin-card p { margin: 11px 0 15px; color: var(--muted); font-size: 10px; line-height: 1.65; }
+      .tags { display: flex; flex-wrap: wrap; gap: 5px; align-self: end; margin-bottom: 15px; }
+      .tag { padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; color: #768293; background: #fafbfd; font-size: 8px; }
+      .plugin-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid #edf0f3; }
+      .plugin-card-foot span { color: var(--faint); font-size: 8px; }
+      .card-actions { display: flex; gap: 6px; }
+      .card-actions .btn { min-height: 29px; padding: 0 9px; font-size: 9px; }
+
+      .inventory { overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+      .inventory-head, .inventory-row { display: grid; grid-template-columns: minmax(220px, 1.5fr) 0.65fr 0.65fr 0.7fr auto; align-items: center; gap: 14px; padding: 11px 15px; }
+      .inventory-head { color: var(--faint); background: #f8fafc; font-size: 9px; font-weight: 650; }
+      .inventory-row { min-height: 65px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+      .inventory-plugin { display: flex; align-items: center; gap: 10px; }
+      .inventory-plugin .plugin-icon { width: 34px; height: 34px; font-size: 15px; }
+      .inventory-plugin strong { display: block; color: var(--ink); font-size: 11px; }
+      .inventory-plugin small { color: var(--faint); font-size: 8px; }
+      .row-actions { display: flex; gap: 6px; }
+      .row-actions .btn { min-height: 29px; padding: 0 9px; font-size: 9px; }
+
+      .detail-page { width: min(1080px, calc(100% - 56px)); margin: 0 auto; padding: 26px 0 72px; }
+      .detail-back { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; color: var(--muted); background: transparent; font-size: 11px; }
+      .detail-back:hover { color: var(--brand); }
+      .detail-hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.7fr); gap: 26px; padding: 24px 0 30px; border-bottom: 1px solid var(--line); }
+      .media { position: relative; overflow: hidden; min-height: 330px; border-radius: 8px; background: #11182b; box-shadow: var(--shadow); }
+      .media img { width: 100%; height: 100%; min-height: 330px; display: block; object-fit: cover; }
+      .media::after { position: absolute; inset: 0; background: rgba(8, 13, 23, 0.18); content: ""; }
+      .play { position: absolute; z-index: 2; top: 50%; left: 50%; width: 58px; height: 58px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 50%; color: #17203a; background: rgba(255, 255, 255, 0.94); transform: translate(-50%, -50%); font-size: 20px; }
+      .play:hover { transform: translate(-50%, -50%) scale(1.05); }
+      .provider { position: absolute; z-index: 2; left: 14px; bottom: 14px; min-height: 25px; display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 4px; color: #fff; background: rgba(11, 17, 30, 0.76); font-size: 9px; }
+      .media iframe { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; border: 0; background: #11182b; }
+      .detail-summary { display: flex; flex-direction: column; align-items: stretch; }
+      .detail-id { display: flex; align-items: center; gap: 12px; margin-bottom: 17px; }
+      .detail-id .plugin-icon { width: 48px; height: 48px; font-size: 21px; }
+      .detail-id h1 { margin: 0 0 4px; font-size: 23px; line-height: 1.25; }
+      .detail-id p { margin: 0; color: var(--faint); font-size: 9px; }
+      .detail-lead { margin: 0 0 18px; color: var(--muted); font-size: 11px; line-height: 1.7; }
+      .detail-facts { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 18px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+      .detail-facts div { padding: 9px 10px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .detail-facts span { display: block; color: var(--faint); font-size: 8px; }
+      .detail-facts strong { display: block; margin-top: 3px; color: #414d5b; font-size: 10px; font-weight: 600; }
+      .install-note { margin-top: 9px; color: var(--faint); font-size: 8px; text-align: center; }
+      .detail-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 38px; padding-top: 31px; }
+      .markdown { min-width: 0; color: #3e4a59; font-size: 12px; line-height: 1.75; }
+      .markdown h2 { margin: 0 0 13px; color: var(--ink); font-size: 20px; line-height: 1.35; }
+      .markdown h3 { margin: 30px 0 10px; color: var(--ink); font-size: 15px; }
+      .markdown p { margin: 0 0 14px; }
+      .markdown ul { margin: 0 0 16px; padding-left: 20px; }
+      .markdown li { margin: 5px 0; }
+      .markdown blockquote { margin: 18px 0; padding: 11px 14px; border-left: 3px solid var(--brand); color: #526176; background: var(--brand-soft); }
+      .markdown code { padding: 2px 5px; border-radius: 3px; color: #2f4e99; background: var(--brand-soft); font-family: "SFMono-Regular", Consolas, monospace; font-size: 10px; }
+      .markdown pre { overflow: auto; margin: 16px 0; padding: 14px; border-radius: 6px; color: #e9eef9; background: #172033; font-size: 10px; line-height: 1.6; }
+      .markdown pre code { padding: 0; color: inherit; background: transparent; }
+      .screenshot { width: 100%; display: block; margin: 17px 0; border: 1px solid var(--line); border-radius: 7px; background: #111; }
+      .detail-aside { display: grid; align-content: start; gap: 24px; }
+      .aside-section { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+      .aside-section h3 { margin: 0 0 11px; color: var(--ink); font-size: 12px; }
+      .permission { display: grid; grid-template-columns: 27px 1fr; gap: 9px; padding: 9px 0; }
+      .permission + .permission { border-top: 1px solid #e9edf1; }
+      .permission i { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 5px; color: var(--green); background: var(--green-soft); font-style: normal; font-size: 11px; }
+      .permission strong { display: block; font-size: 10px; }
+      .permission span { display: block; margin-top: 2px; color: var(--faint); font-size: 8px; }
+      .source-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 6px 0; color: var(--faint); font-size: 9px; }
+      .source-row strong { color: #465363; font-weight: 600; text-align: right; word-break: break-all; }
+      .verified { color: var(--green) !important; }
+      .changelog { display: grid; gap: 9px; }
+      .changelog div { padding-left: 11px; border-left: 2px solid var(--line-strong); }
+      .changelog strong { display: block; font-size: 9px; }
+      .changelog span { color: var(--faint); font-size: 8px; }
+
+      .modal { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(17, 25, 36, 0.42); }
+      .modal-panel { width: min(480px, 100%); overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: 0 24px 70px rgba(20, 31, 45, 0.24); }
+      .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+      .modal-head h2 { margin: 0; font-size: 16px; }
+      .modal-head p { margin: 4px 0 0; color: var(--faint); font-size: 9px; }
+      .modal-body { padding: 18px 20px 20px; }
+      .security-note { padding: 11px 12px; border: 1px solid #c8e5d6; border-radius: 6px; color: #3f6655; background: var(--green-soft); font-size: 9px; line-height: 1.65; }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+      .progress { height: 6px; overflow: hidden; margin-top: 16px; border-radius: 999px; background: var(--surface-soft); }
+      .progress span { display: block; width: 0; height: 100%; background: var(--brand); transition: width 0.25s ease; }
+      .toast { position: fixed; z-index: 30; right: 20px; bottom: 20px; padding: 10px 13px; border: 1px solid #badfcd; border-radius: 6px; color: #2f6d52; background: #f0faf5; box-shadow: var(--shadow); font-size: 10px; }
+      .empty { padding: 60px 20px; border: 1px dashed var(--line-strong); border-radius: 7px; color: var(--faint); background: var(--surface); font-size: 11px; text-align: center; }
+
+      @media (max-width: 980px) {
+        .workspace { grid-template-columns: 174px minmax(0, 1fr); }
+        .page, .detail-page { width: min(100% - 38px, 820px); }
+        .plugin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .detail-hero { grid-template-columns: 1fr; }
+        .detail-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+        .detail-id, .detail-lead { grid-column: 1 / -1; }
+        .detail-body { grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; }
+        .inventory-head, .inventory-row { grid-template-columns: minmax(180px, 1.4fr) 0.7fr 0.7fr auto; }
+        .inventory-head > :nth-child(4), .inventory-row > :nth-child(4) { display: none; }
+      }
+
+      @media (max-width: 720px) {
+        .app-shell { grid-template-rows: 54px minmax(0, 1fr); }
+        .titlebar { padding: 0 13px; }
+        .traffic, .runtime, .product span { display: none; }
+        .workspace { display: block; }
+        .sidebar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; height: 58px; display: grid; grid-template-columns: 1fr; padding: 0; border-top: 1px solid var(--line); border-right: 0; }
+        .side-title, .sidebar-foot { display: none; }
+        .side-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+        .side-nav button { min-height: 57px; justify-content: center; border-radius: 0; font-size: 10px; }
+        .nav-badge { margin-left: 0; }
+        .page, .detail-page { width: min(100% - 28px, 560px); padding-top: 22px; padding-bottom: 88px; }
+        .page-header { align-items: flex-start; }
+        .page-header h1 { font-size: 23px; }
+        .page-header p, .header-actions .btn:first-child { display: none; }
+        .carousel { min-height: 330px; }
+        .slide { align-items: end; }
+        .slide::after { background: linear-gradient(0deg, rgba(11, 17, 31, 0.95) 0%, rgba(11, 17, 31, 0.35) 75%); }
+        .slide-content { width: 100%; padding: 30px 27px; }
+        .slide h2 { font-size: 23px; }
+        .carousel-control { top: 18px; transform: none; }
+        .carousel-control.prev { right: 54px; left: auto; }
+        .carousel-control.next { right: 14px; }
+        .toolbar { grid-template-columns: 1fr; }
+        .filters { overflow-x: auto; }
+        .filters select { flex: 1; min-width: 120px; }
+        .plugin-grid { grid-template-columns: 1fr; }
+        .inventory-head { display: none; }
+        .inventory-row { grid-template-columns: 1fr auto; gap: 10px; }
+        .inventory-row > :nth-child(2), .inventory-row > :nth-child(3), .inventory-row > :nth-child(4) { display: none; }
+        .detail-hero { padding-top: 18px; }
+        .media, .media img { min-height: 230px; }
+        .detail-summary { display: flex; }
+        .detail-body { grid-template-columns: 1fr; }
+        .detail-aside { order: -1; }
+        .modal { align-items: end; padding: 0; }
+        .modal-panel { width: 100%; border-radius: 8px 8px 0 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="titlebar">
+        <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span class="product-mark">H</span>
+        <div class="product"><strong>Harndock</strong><span>Desktop · Plugin Center</span></div>
+        <span class="titlebar-spacer"></span>
+        <div class="runtime"><i></i>本地 Runtime 已连接</div>
+        <button class="icon-button" type="button" title="刷新插件目录" data-refresh>↻</button>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar">
+          <div class="side-title">Plugin Center</div>
+          <nav class="side-nav" aria-label="插件中心导航">
+            <button class="active" type="button" data-view="discover"><span class="nav-icon">⌕</span>发现插件</button>
+            <button type="button" data-view="installed"><span class="nav-icon">▣</span>已安装<span class="nav-badge">2</span></button>
+            <button type="button" data-view="updates"><span class="nav-icon">↻</span>插件更新<span class="nav-badge">1</span></button>
+          </nav>
+          <div class="sidebar-foot"><strong>本地插件目录</strong><span>2 个插件 · 1 个可更新</span></div>
+        </aside>
+
+        <main class="main">
+          <section class="page" id="catalog-page">
+            <header class="page-header">
+              <div><p class="eyebrow">Marketplace</p><h1 id="page-title">发现插件</h1><p id="page-subtitle">扩展 Harndock 的能力，并在本机完成安装校验。</p></div>
+              <div class="header-actions"><button class="btn" type="button" data-refresh>刷新目录</button><button class="btn primary" type="button" data-view="installed">管理插件</button></div>
+            </header>
+
+            <div id="catalog-content"></div>
+          </section>
+
+          <section class="detail-page" id="detail-page" hidden></section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal" id="install-modal" hidden>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="modal-head"><div><h2 id="install-title">安装前确认</h2><p id="install-subtitle"></p></div><button class="icon-button" type="button" aria-label="关闭" data-close-modal>×</button></div>
+        <div class="modal-body">
+          <div class="security-note"><strong>安全检查已通过</strong><br />安装包来自公开 GitHub Release，Desktop 将再次校验 SHA-256、Ed25519 签名、平台和 Runtime API。</div>
+          <div id="install-permissions"></div>
+          <div class="progress" id="install-progress" hidden><span></span></div>
+          <div class="modal-actions"><button class="btn" type="button" data-close-modal>取消</button><button class="btn primary" id="confirm-install" type="button">确认并安装</button></div>
+        </div>
+      </section>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+
+    <script>
+      const assetRoot = "../branding-assets/";
+      const plugins = [
+        {
+          id: "dsh-univer-office", name: "DSH Univer Office", icon: "U", tone: "", author: "javajeans", category: "productivity", categoryLabel: "效率工具", platform: "macOS · Windows", version: "0.2.14", state: "update", installs: "2.8k",
+          summary: "在 Harndock 中创建和编辑表格、文档、演示文稿、数据看板和画布。",
+          lead: "把办公文档能力带进 Harndock。通过自然语言创建、编辑和检查表格、文档与演示文稿，同时保留完整的本地工作流。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "bilibili", videoLabel: "Bilibili · 产品演示", tags: ["表格", "文档", "演示文稿"],
+          permissions: [["▤", "读写工作区文件", "创建和更新 Office 文档"], ["⌘", "启动本地编辑器", "打开 Univer 编辑窗口"]]
+        },
+        {
+          id: "dsh-at-file", name: "@file 工作区引用", icon: "@", tone: "green", author: "javajeans", category: "developer", categoryLabel: "开发者工具", platform: "macOS · Windows · Linux", version: "0.7.2", state: "installed", installs: "5.4k",
+          summary: "在 Harndock 输入框中使用 @ 快速引用工作区文件和目录。",
+          lead: "在对话中快速找到并引用当前工作区文件。插件会理解目录层级，并把精确的文件上下文交给当前会话。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "youtube", videoLabel: "YouTube · 使用教程", tags: ["文件引用", "工作区", "上下文"],
+          permissions: [["▤", "读取工作区文件", "索引文件名和目录结构"]]
+        },
+        {
+          id: "code-review", name: "代码审查员", icon: "⌘", tone: "amber", author: "Harndock Labs", category: "developer", categoryLabel: "开发者工具", platform: "macOS · Windows · Linux", version: "3.2.0", state: "available", installs: "24.2k",
+          summary: "按风险分层审查当前变更，定位回归、安全问题和测试缺口。",
+          lead: "面向本地 Git 工作树的结构化代码审查。先展示高风险问题，再给出可执行的修复建议和测试缺口。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "youtube", videoLabel: "YouTube · 工作流演示", tags: ["代码质量", "Git Diff", "测试"],
+          permissions: [["▤", "读取工作区文件", "检查当前 Git 工作树"], ["⌘", "执行项目检查", "运行项目已有测试和静态检查"]]
+        },
+        {
+          id: "presentation-studio", name: "演示文稿 Studio", icon: "P", tone: "amber", author: "Univer Team", category: "productivity", categoryLabel: "效率工具", platform: "macOS · Windows", version: "1.3.1", state: "available", installs: "6.9k",
+          summary: "从提纲生成演示文稿，并在可视化编辑器中继续修改。",
+          lead: "将研究材料、结构化提纲和品牌要求转化为可编辑的演示文稿。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "bilibili", videoLabel: "Bilibili · 生成演示", tags: ["Slides", "内容生成", "可视化编辑"],
+          permissions: [["▤", "读写演示文稿", "创建和修改本地演示文件"]]
+        },
+        {
+          id: "spreadsheet-agent", name: "智能表格助手", icon: "S", tone: "green", author: "Univer Team", category: "data", categoryLabel: "数据分析", platform: "macOS · Windows", version: "1.5.0", state: "available", installs: "9.1k",
+          summary: "分析数据、生成公式和图表，并保持工作簿格式一致。",
+          lead: "在本地工作簿中完成数据整理、公式生成、格式化和图表制作。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "youtube", videoLabel: "YouTube · 表格分析", tags: ["Excel", "公式", "图表"],
+          permissions: [["▤", "读写电子表格", "更新本地工作簿和图表"]]
+        },
+        {
+          id: "project-memory", name: "项目记忆库", icon: "M", tone: "", author: "Harndock Community", category: "knowledge", categoryLabel: "知识管理", platform: "macOS · Windows · Linux", version: "1.2.8", state: "available", installs: "15.3k",
+          summary: "维护可搜索的长期项目记忆，让上下文在不同会话之间持续。",
+          lead: "为项目建立本地知识索引，并在不同会话之间提供可追溯的上下文。",
+          banner: assetRoot + "harndock-logo-indigo-light.png",
+          screenshot: assetRoot + "harndock-logo-indigo-light.png",
+          provider: "bilibili", videoLabel: "Bilibili · 项目记忆", tags: ["知识库", "本地索引", "上下文"],
+          permissions: [["▤", "读取工作区文件", "建立本地项目索引"]]
+        }
+      ];
+
+      const carouselPlugins = [plugins[0], plugins[1], plugins[2]];
+      let activeView = "discover";
+      let carouselIndex = 0;
+      let carouselTimer = null;
+      let selectedPlugin = null;
+      const catalogPage = document.querySelector("#catalog-page");
+      const detailPage = document.querySelector("#detail-page");
+      const catalogContent = document.querySelector("#catalog-content");
+      const toast = document.querySelector("#toast");
+
+      function stateLabel(plugin) {
+        if (plugin.state === "installed") return "已安装";
+        if (plugin.state === "update") return "可更新";
+        return "已验证";
+      }
+
+      function actionLabel(plugin) {
+        if (plugin.state === "installed") return "管理";
+        if (plugin.state === "update") return "更新";
+        return "获取";
+      }
+
+      function pluginCard(plugin) {
+        return `<article class="plugin-card">
+          <div class="plugin-card-top"><span class="plugin-icon ${plugin.tone}">${plugin.icon}</span><span class="status-pill ${plugin.state}">${stateLabel(plugin)}</span></div>
+          <div><h3>${plugin.name}</h3><span class="plugin-meta">${plugin.author} · v${plugin.version}</span></div>
+          <p>${plugin.summary}</p>
+          <div class="tags">${plugin.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+          <div class="plugin-card-foot"><span>${plugin.categoryLabel} · ${plugin.installs} 次安装</span><div class="card-actions"><button class="btn" type="button" data-plugin="${plugin.id}">详情</button><button class="btn ${plugin.state === "available" ? "primary" : ""}" type="button" data-action="${plugin.id}">${actionLabel(plugin)}</button></div></div>
+        </article>`;
+      }
+
+      function carousel() {
+        return `<section class="carousel" id="carousel" aria-label="精选插件">
+          ${carouselPlugins.map((plugin, index) => `<article class="slide ${index === carouselIndex ? "active" : ""}" data-slide="${index}">
+            <img src="${plugin.banner}" alt="${plugin.name} 功能预览" />
+            <div class="slide-content"><span class="slide-kicker">本周精选 · ${plugin.categoryLabel}</span><h2>${plugin.name}</h2><p>${plugin.lead}</p><button class="btn" type="button" data-plugin="${plugin.id}">查看插件详情</button></div>
+          </article>`).join("")}
+          <button class="carousel-control prev" type="button" aria-label="上一张" data-carousel="prev">‹</button>
+          <button class="carousel-control next" type="button" aria-label="下一张" data-carousel="next">›</button>
+          <div class="carousel-dots">${carouselPlugins.map((_, index) => `<button class="${index === carouselIndex ? "active" : ""}" type="button" aria-label="查看第 ${index + 1} 张" data-slide-to="${index}"></button>`).join("")}</div>
+        </section>`;
+      }
+
+      function renderDiscover() {
+        catalogContent.innerHTML = `${carousel()}
+          <div class="toolbar">
+            <label class="search"><span>⌕</span><input id="plugin-search" placeholder="搜索插件名称、能力或作者" /></label>
+            <div class="filters"><select id="category-filter" aria-label="插件分类"><option value="all">全部分类</option><option value="developer">开发者工具</option><option value="productivity">效率工具</option><option value="data">数据分析</option><option value="knowledge">知识管理</option></select><select id="platform-filter" aria-label="支持平台"><option value="all">全部平台</option><option value="macOS">macOS</option><option value="Windows">Windows</option><option value="Linux">Linux</option></select></div>
+          </div>
+          <div class="section-heading"><h2>全部插件</h2><span id="result-count">${plugins.length} 个插件</span></div><div class="plugin-grid" id="plugin-grid">${plugins.map(pluginCard).join("")}</div>`;
+        document.querySelector("#plugin-search").addEventListener("input", filterPlugins);
+        document.querySelector("#category-filter").addEventListener("change", filterPlugins);
+        document.querySelector("#platform-filter").addEventListener("change", filterPlugins);
+        startCarousel();
+      }
+
+      function filterPlugins() {
+        const query = document.querySelector("#plugin-search").value.trim().toLowerCase();
+        const category = document.querySelector("#category-filter").value;
+        const platform = document.querySelector("#platform-filter").value;
+        const filtered = plugins.filter(plugin => {
+          const text = [plugin.name, plugin.author, plugin.summary, ...plugin.tags].join(" ").toLowerCase();
+          return (!query || text.includes(query)) && (category === "all" || plugin.category === category) && (platform === "all" || plugin.platform.includes(platform));
+        });
+        document.querySelector("#plugin-grid").innerHTML = filtered.length ? filtered.map(pluginCard).join("") : `<div class="empty" style="grid-column:1/-1">没有找到符合条件的插件</div>`;
+        document.querySelector("#result-count").textContent = `${filtered.length} 个插件`;
+      }
+
+      function renderInventory(updatesOnly = false) {
+        stopCarousel();
+        const list = plugins.filter(plugin => updatesOnly ? plugin.state === "update" : plugin.state === "installed" || plugin.state === "update");
+        catalogContent.innerHTML = `<div class="section-heading"><h2>${updatesOnly ? "可用更新" : "本机插件"}</h2><span>${list.length} 个插件</span></div>
+          <div class="inventory"><div class="inventory-head"><span>插件</span><span>当前版本</span><span>状态</span><span>平台</span><span>操作</span></div>${list.map(plugin => `<div class="inventory-row"><div class="inventory-plugin"><span class="plugin-icon ${plugin.tone}">${plugin.icon}</span><div><strong>${plugin.name}</strong><small>${plugin.author}</small></div></div><span>v${plugin.version}</span><span><span class="status-pill ${plugin.state}">${stateLabel(plugin)}</span></span><span>${plugin.platform}</span><div class="row-actions"><button class="btn" type="button" data-plugin="${plugin.id}">详情</button><button class="btn ${plugin.state === "update" ? "primary" : ""}" type="button" data-action="${plugin.id}">${plugin.state === "update" ? "更新" : "管理"}</button></div></div>`).join("")}</div>`;
+      }
+
+      function renderView() {
+        selectedPlugin = null;
+        detailPage.hidden = true;
+        catalogPage.hidden = false;
+        document.querySelectorAll("[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === activeView));
+        const title = document.querySelector("#page-title");
+        const subtitle = document.querySelector("#page-subtitle");
+        if (activeView === "discover") { title.textContent = "发现插件"; subtitle.textContent = "扩展 Harndock 的能力，并在本机完成安装校验。"; renderDiscover(); }
+        if (activeView === "installed") { title.textContent = "已安装插件"; subtitle.textContent = "查看本机插件的版本、运行状态和更新。"; renderInventory(false); }
+        if (activeView === "updates") { title.textContent = "插件更新"; subtitle.textContent = "更新前查看版本变化，并保留可回滚的旧版本。"; renderInventory(true); }
+      }
+
+      function markdownContent(plugin) {
+        if (plugin.id === "dsh-at-file") return `<h2>在对话里准确引用工作区内容</h2><p>输入 <code>@</code> 即可搜索当前工作区内的文件和目录。选择结果后，引用会作为明确的上下文发送给 Harndock。</p><blockquote>文件内容仍由本地 Harness 按当前权限读取，Marketplace 不接触你的工作区数据。</blockquote><h3>核心能力</h3><ul><li>按名称快速搜索文件和目录</li><li>保留工作区相对路径，减少歧义</li><li>支持键盘浏览和连续引用</li></ul><img class="screenshot" src="${plugin.screenshot}" alt="@file 工作区路径选择界面" /><h3>开始使用</h3><pre><code>1. 在输入框中键入 @\n2. 搜索并选择文件\n3. 继续描述你希望完成的任务</code></pre>`;
+        if (plugin.id === "dsh-univer-office") return `<h2>让文档工作流留在 Harndock</h2><p>创建和编辑表格、文档、演示文稿、数据看板和画布。你可以从一句自然语言需求开始，再进入可视化编辑器完成精细调整。</p><h3>从数据到可编辑成果</h3><ul><li>生成带公式、格式和图表的电子表格</li><li>创建结构清晰的文档与演示文稿</li><li>在执行过程中预览工作树中的最新结果</li></ul><img class="screenshot" src="${plugin.screenshot}" alt="Univer Office 表格编辑演示" /><blockquote>文件保存在本地工作区。插件只使用安装确认中列出的权限。</blockquote><h3>示例任务</h3><pre><code>创建一个季度销售分析工作簿，\n包含数据清洗、同比公式和区域销售图表。</code></pre>`;
+        return `<h2>${plugin.name} 如何工作</h2><p>${plugin.lead}</p><h3>适合这些场景</h3><ul>${plugin.tags.map(tag => `<li>在 ${tag} 工作流中获得结构化辅助</li>`).join("")}</ul><img class="screenshot" src="${plugin.screenshot}" alt="${plugin.name} 功能截图" /><blockquote>安装前会展示完整权限和兼容性信息，确认后才会写入本地插件目录。</blockquote><h3>运行边界</h3><p>插件在本地 Harness Runtime 中加载，不会修改上游 Harness 源码。禁用或卸载将在 Runtime 重启后生效。</p>`;
+      }
+
+      function openDetail(pluginId) {
+        const plugin = plugins.find(item => item.id === pluginId);
+        if (!plugin) return;
+        stopCarousel();
+        selectedPlugin = plugin;
+        catalogPage.hidden = true;
+        detailPage.hidden = false;
+        detailPage.innerHTML = `<button class="detail-back" type="button" data-back>← 返回${activeView === "discover" ? "发现" : activeView === "installed" ? "已安装" : "更新"}</button>
+          <section class="detail-hero">
+            <div class="media" id="detail-media"><img src="${plugin.banner}" alt="${plugin.name} 视频封面" /><button class="play" type="button" aria-label="播放${plugin.name}介绍视频" data-play>▶</button><span class="provider">${plugin.videoLabel}</span></div>
+            <div class="detail-summary"><div class="detail-id"><span class="plugin-icon ${plugin.tone}">${plugin.icon}</span><div><h1>${plugin.name}</h1><p>${plugin.author} · ${plugin.categoryLabel}</p></div></div><p class="detail-lead">${plugin.lead}</p><div class="detail-facts"><div><span>最新版本</span><strong>v${plugin.version}</strong></div><div><span>安装量</span><strong>${plugin.installs}</strong></div><div><span>支持平台</span><strong>${plugin.platform}</strong></div><div><span>兼容性</span><strong>Harndock ≥ 0.1.0</strong></div></div><button class="btn ${plugin.state === "installed" ? "success" : "primary"}" type="button" data-action="${plugin.id}">${plugin.state === "installed" ? "已安装 · 管理插件" : plugin.state === "update" ? "更新到 v" + plugin.version : "获取插件"}</button><span class="install-note">公开 GitHub Release · SHA-256 与 Ed25519 签名已验证</span></div>
+          </section>
+          <div class="detail-body"><article class="markdown">${markdownContent(plugin)}</article><aside class="detail-aside"><section class="aside-section"><h3>运行权限</h3>${plugin.permissions.map(permission => `<div class="permission"><i>${permission[0]}</i><div><strong>${permission[1]}</strong><span>${permission[2]}</span></div></div>`).join("")}</section><section class="aside-section"><h3>来源与校验</h3><div class="source-row"><span>来源</span><strong>GitHub Release</strong></div><div class="source-row"><span>Runtime API</span><strong>v1 · 兼容</strong></div><div class="source-row"><span>SHA-256</span><strong class="verified">校验通过</strong></div><div class="source-row"><span>签名</span><strong class="verified">Ed25519 有效</strong></div></section><section class="aside-section"><h3>最近更新</h3><div class="changelog"><div><strong>v${plugin.version}</strong><span>当前已发布版本</span></div><div><strong>v${plugin.id === "dsh-univer-office" ? "0.2.13" : "0.7.1"}</strong><span>稳定性和交互优化</span></div></div></section></aside></div>`;
+        detailPage.scrollIntoView({ block: "start" });
+      }
+
+      function playVideo() {
+        if (!selectedPlugin) return;
+        const media = document.querySelector("#detail-media");
+        const providerName = selectedPlugin.provider === "youtube" ? "YouTube" : "Bilibili";
+        media.innerHTML = `<iframe title="${selectedPlugin.name} ${providerName} 视频" srcdoc="<!doctype html><html><style>html,body{height:100%;margin:0}body{display:grid;place-items:center;background:#101827;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:center}.box{padding:24px}.logo{font-size:36px}.title{margin:14px 0 5px;font-size:18px;font-weight:650}.note{color:#9eabc0;font-size:12px}</style><body><div class='box'><div class='logo'>▶</div><div class='title'>${providerName} 嵌入播放器</div><div class='note'>正式版将使用后台配置的视频 ID 加载 ${selectedPlugin.name} 演示</div></div></body></html>" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      }
+
+      function openInstall(pluginId) {
+        const plugin = plugins.find(item => item.id === pluginId);
+        if (!plugin) return;
+        if (plugin.state === "installed") { showToast("已打开 " + plugin.name + " 的本地管理设置"); return; }
+        selectedPlugin = plugin;
+        document.querySelector("#install-subtitle").textContent = `${plugin.name} · v${plugin.version} · 当前用户`;
+        document.querySelector("#install-permissions").innerHTML = `<div style="margin-top:15px"><strong style="font-size:11px">请求权限</strong>${plugin.permissions.map(permission => `<div class="permission"><i>${permission[0]}</i><div><strong>${permission[1]}</strong><span>${permission[2]}</span></div></div>`).join("")}</div>`;
+        document.querySelector("#install-progress").hidden = true;
+        document.querySelector("#install-progress span").style.width = "0";
+        document.querySelector("#confirm-install").hidden = false;
+        document.querySelector("#install-modal").hidden = false;
+      }
+
+      function confirmInstall() {
+        if (!selectedPlugin) return;
+        const progress = document.querySelector("#install-progress");
+        const bar = progress.querySelector("span");
+        document.querySelector("#confirm-install").hidden = true;
+        progress.hidden = false;
+        let value = 0;
+        const timer = window.setInterval(() => {
+          value += 20;
+          bar.style.width = value + "%";
+          if (value >= 100) {
+            window.clearInterval(timer);
+            selectedPlugin.state = "installed";
+            window.setTimeout(() => { document.querySelector("#install-modal").hidden = true; openDetail(selectedPlugin.id); showToast(selectedPlugin.name + " 已安装到本地 Harndock"); }, 300);
+          }
+        }, 180);
+      }
+
+      function setCarousel(index) {
+        carouselIndex = (index + carouselPlugins.length) % carouselPlugins.length;
+        document.querySelectorAll("[data-slide]").forEach((slide, slideIndex) => slide.classList.toggle("active", slideIndex === carouselIndex));
+        document.querySelectorAll("[data-slide-to]").forEach((dot, dotIndex) => dot.classList.toggle("active", dotIndex === carouselIndex));
+      }
+
+      function startCarousel() {
+        stopCarousel();
+        carouselTimer = window.setInterval(() => setCarousel(carouselIndex + 1), 5200);
+        const element = document.querySelector("#carousel");
+        element.addEventListener("mouseenter", stopCarousel);
+        element.addEventListener("mouseleave", startCarousel);
+      }
+
+      function stopCarousel() {
+        if (carouselTimer !== null) window.clearInterval(carouselTimer);
+        carouselTimer = null;
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.hidden = false;
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => { toast.hidden = true; }, 2300);
+      }
+
+      document.addEventListener("click", event => {
+        const viewButton = event.target.closest("[data-view]");
+        if (viewButton) { activeView = viewButton.dataset.view; renderView(); return; }
+        const pluginButton = event.target.closest("[data-plugin]");
+        if (pluginButton) { openDetail(pluginButton.dataset.plugin); return; }
+        const actionButton = event.target.closest("[data-action]");
+        if (actionButton) { openInstall(actionButton.dataset.action); return; }
+        if (event.target.closest("[data-back]")) { renderView(); return; }
+        if (event.target.closest("[data-play]")) { playVideo(); return; }
+        const carouselButton = event.target.closest("[data-carousel]");
+        if (carouselButton) { setCarousel(carouselIndex + (carouselButton.dataset.carousel === "next" ? 1 : -1)); startCarousel(); return; }
+        const slideDot = event.target.closest("[data-slide-to]");
+        if (slideDot) { setCarousel(Number(slideDot.dataset.slideTo)); startCarousel(); return; }
+        if (event.target.closest("[data-refresh]")) { showToast("插件目录已刷新"); return; }
+        if (event.target.closest("[data-close-modal]")) { document.querySelector("#install-modal").hidden = true; }
+      });
+
+      document.querySelector("#confirm-install").addEventListener("click", confirmInstall);
+      document.addEventListener("keydown", event => { if (event.key === "Escape") document.querySelector("#install-modal").hidden = true; });
+      document.addEventListener("visibilitychange", () => { if (document.hidden) stopCarousel(); else if (activeView === "discover" && !catalogPage.hidden) startCarousel(); });
+      renderView();
+    </script>
+  </body>
+</html>

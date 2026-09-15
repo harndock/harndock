@@ -1,0 +1,6 @@
+T5-01/T7-06 PASS - Live Session snapshot and zero-based seq 0..2 reached Gateway; outbox ACK cursor advanced to 2.
+T5-02/T7-06 PARTIAL - REST history and persisted cursor replay passed; BlueStacks reconnect UI needs a dedicated retry test.
+T5-03/T7-07 PASS - Real Harness session.prompt completed and session.cancel completed; Session reached terminal completed.
+T5-04/T7-07 TODO - Approval first-wins and concurrent command serialization not executed.
+T5-05/T7-08 TODO - Device revoke and re-pair not executed in this round.
+T5-06 PARTIAL - Authentication failure navigation was implemented; device UI regression remains.
