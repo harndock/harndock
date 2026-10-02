@@ -16,31 +16,13 @@ pub(super) fn parse_ready_url(line: &str) -> Result<Option<Url>, String> {
         || url.host_str() != Some("127.0.0.1")
         || url.port().is_none()
         || url.path() != "/"
+        || url.query().is_some()
+        || url.fragment().is_some()
         || !url.username().is_empty()
         || url.password().is_some()
     {
         return Err(format!(
             "readiness URL must be a loopback HTTP root URL with an explicit port, got {value}"
-        ));
-    }
-
-    let Some(query) = url.query() else {
-        return Err(format!(
-            "readiness URL must contain a launch token, got {value}"
-        ));
-    };
-    let Some(token) = query.strip_prefix("token=") else {
-        return Err(format!(
-            "readiness URL must contain only a launch token, got {value}"
-        ));
-    };
-    if token.len() != 43
-        || !token
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
-    {
-        return Err(format!(
-            "readiness URL contains an invalid launch token, got {value}"
         ));
     }
 
@@ -59,24 +41,22 @@ mod tests {
     #[test]
     fn accepts_the_harness_readiness_line_with_a_lan_suffix() {
         let url =
-            parse_ready_url("dsh web: http://127.0.0.1:43127/?token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO12 (LAN: http://192.168.1.2:43127/?token=ignored)")
+            parse_ready_url("dsh web: http://127.0.0.1:43127 (LAN: http://192.168.1.2:43127)")
                 .unwrap()
                 .unwrap();
-        assert_eq!(
-            url.as_str(),
-            "http://127.0.0.1:43127/?token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO12"
-        );
+        assert_eq!(url.as_str(), "http://127.0.0.1:43127/");
     }
 
     #[test]
     fn rejects_non_loopback_or_implicit_ports() {
         assert!(
             parse_ready_url(
-                "dsh web: http://localhost:43127/?token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO12"
+                "dsh web: http://localhost:43127"
             )
             .is_err()
         );
         assert!(parse_ready_url("dsh web: http://127.0.0.1").is_err());
-        assert!(parse_ready_url("dsh web: https://127.0.0.1:43127/?token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO12").is_err());
+        assert!(parse_ready_url("dsh web: https://127.0.0.1:43127").is_err());
+        assert!(parse_ready_url("dsh web: http://127.0.0.1:43127/?token=not-used").is_err());
     }
 }

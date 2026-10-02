@@ -81,7 +81,6 @@ const commandEnvironment = {
 try {
   await assertHarnessSource()
   await exportHarness(cleanHarness)
-  await patchDesktopWebViewAuthentication(cleanHarness)
   const packageMap = await discoverHarnessPackages(cleanHarness)
   const closure = resolveRuntimeClosure(packageMap, '@deepseek-ai/dsh')
   await writeDeployRoot(cleanHarness, closure)
@@ -192,19 +191,6 @@ async function exportHarness(destination) {
   const sourceArchive = join(staging, 'harness-source.tar')
   await run('git', ['-C', harnessDir, 'archive', '--format=tar', '--output', sourceArchive, harnessLock.commit])
   await run('tar', ['-xf', sourceArchive, '-C', destination])
-}
-
-async function patchDesktopWebViewAuthentication(sourceRoot) {
-  const path = join(sourceRoot, 'packages', 'client', 'connection', 'src', 'browser-auth.ts')
-  const content = await readFile(path, 'utf8')
-  const strictCookie = '; HttpOnly; SameSite=Strict'
-  const laxCookie = '; HttpOnly; SameSite=Lax'
-  const matches = content.split(strictCookie).length - 1
-  if (matches !== 1) {
-    throw new Error(`desktop WebView authentication patch expected one SameSite=Strict cookie, found ${String(matches)}`)
-  }
-  await writeFile(path, content.replace(strictCookie, laxCookie))
-  console.log('Runtime builder: patched browser-session Cookie for desktop WebView redirects')
 }
 
 async function packageDirectories(sourceRoot) {

@@ -899,7 +899,7 @@ mod tests {
   "shellCompatibility": {{"minVersion": "0.1.0", "maxVersionExclusive": "0.2.0"}},
   "launch": {{"node": "bin/node", "packageManagerEntrypoint": "tools/pnpm/bin/pnpm.cjs", "harnessEntrypoint": "app/bin.js", "cwd": "app"}},
   "profile": {{"name": "desktop", "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app", "@harndock/desktop-bundle"]}},
-  "components": {{"node": {{"version": "22.22.3"}}, "pnpm": {{"version": "11.9.0"}}, "harness": {{"version": "0.1.2-alpha.1", "commit": "cd5ef8148158c3a752a658978873241fdf8e2bbc"}}}},
+  "components": {{"node": {{"version": "22.22.3"}}, "pnpm": {{"version": "11.9.0"}}, "harness": {{"version": "0.1.0-rc.5", "commit": "47f943859bef60e4160492346772ded9b24f765a"}}}},
   "productPackages": [
     {{"name": "@harndock/desktop-bundle", "role": "bundle", "path": "plugins/desktop-bundle"}},
     {{"name": "@harndock/client-desktop", "role": "client", "path": "plugins/client-desktop"}},
@@ -972,7 +972,7 @@ mod tests {
         let manifest = store.installed("2026.08.17.4").unwrap();
         fs::write(
             manifest.root.join("runtime-manifest.json"),
-            br#"{"manifestVersion":1,"runtimeVersion":"2026.08.17.4","runtimeApi":1,"target":"darwin-aarch64","launch":{"node":"../node","harnessEntrypoint":"app/bin.js","cwd":"app"},"profile":{"name":"desktop"},"components":{"harness":{"commit":"cd5ef8148158c3a752a658978873241fdf8e2bbc"}},"control":{"protocolVersion":1,"transport":"unix"}}"#,
+            br#"{"manifestVersion":1,"runtimeVersion":"2026.08.17.4","runtimeApi":1,"target":"darwin-aarch64","launch":{"node":"../node","harnessEntrypoint":"app/bin.js","cwd":"app"},"profile":{"name":"desktop"},"components":{"harness":{"commit":"47f943859bef60e4160492346772ded9b24f765a"}},"control":{"protocolVersion":1,"transport":"unix"}}"#,
         )
         .unwrap();
         assert!(matches!(

@@ -13,8 +13,8 @@ Runtime 包含固定 Node 版本、构建后的 `dsh` CLI、Web 资源、生产�
 ```json
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness.git",
-  "commit": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
-  "upstreamVersion": "0.1.2-alpha.1",
+  "commit": "47f943859bef60e4160492346772ded9b24f765a",
+  "upstreamVersion": "0.1.0-rc.5",
   "node": "22.22.3",
   "runtimeApi": 1
 }
@@ -50,7 +50,7 @@ P4 中每个平台 artifact 再配套一个外部签名清单：
 {
   "channel": "stable",
   "runtimeVersion": "2026.08.16.1",
-  "harnessCommit": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+  "harnessCommit": "47f943859bef60e4160492346772ded9b24f765a",
   "platform": "darwin-aarch64",
   "runtimeApi": 1,
   "minShellVersion": "0.1.0",
@@ -120,12 +120,12 @@ stateDiagram-v2
 P1/P2 开发源码模式读取受管进程 stdout 中的稳定就绪行：
 
 ```text
-dsh web: http://127.0.0.1:<port>/?token=<one-time-launch-token>
+dsh web: http://127.0.0.1:<port>
 ```
 
 Harness 仅在 Web Server 已绑定且 Loader 树完成 settlement 后输出该行。Runtime Manager 仍需设置启动超时，并把超时、提前退出和输出流关闭区分为不同错误。
 
-生产协议 v1 改用应用数据目录私有 `runtime/control/` 下的 Unix socket。Shell 创建 socket 和 256-bit nonce，通过环境变量交给 `@harndock/runtime-bridge`；bridge 注入 `webServer` 和 `connection`、等待 Loader settlement，再发送一条不超过 8 KiB 的 NDJSON `ready` 帧。Shell 按 [`runtime/control-protocol.schema.json`](../runtime/control-protocol.schema.json) 验证 nonce、版本、profile、Harness commit、干净的 `127.0.0.1` URL 与同源一次性认证 URL，并用认证 URL 在内嵌 WebView 中建立会话。生产模式在 ready 前遇到超时、EOF、多帧或 schema 错误时直接启动失败，不回退到 stdout 文案，也不自动打开系统浏览器。
+生产协议 v1 改用应用数据目录私有 `runtime/control/` 下的 Unix socket。Shell 创建 socket 和 256-bit nonce，通过环境变量交给 `@harndock/runtime-bridge`；bridge 注入 `webServer`、等待 Loader settlement，再发送一条不超过 8 KiB 的 NDJSON `ready` 帧。Shell 按 [`runtime/control-protocol.schema.json`](../runtime/control-protocol.schema.json) 验证 nonce、版本、profile、Harness commit 和干净的 `127.0.0.1` 根 URL，然后在内嵌 WebView 中打开该地址。生产模式在 ready 前遇到超时、EOF、多帧或 schema 错误时直接启动失败，不回退到 stdout 文案，也不自动打开系统浏览器。
 
 当前实现中，debug 构建默认使用源码开发适配器；release 构建默认读取 `runtime/current.json`，解析 artifact manifest，使用 Runtime 内置 `bin/node` 和 `app/node_modules/@deepseek-ai/dsh/lib/bin.js` 启动。生产启动创建 `runtime/control/control.sock` 和每次启动独立的 256-bit nonce，通过 `HARNDOCK_CONTROL_*` 环境变量交给 bridge；Rust 端逐连接接受最大 8 KiB 的严格帧，先用 `ready` 导航到 Runtime，随后只接受 metadata 完整匹配的 `showSettings` 固定动作。Harness 浏览器入口通过同源固定 POST 请求 host bridge 发送该动作，不获得 nonce 或通用 Tauri IPC。listener 随 Runtime 生命周期关闭。开发调试可用 `HARNDOCK_RUNTIME_MODE=development` 或 `production` 显式覆盖默认 profile。
 

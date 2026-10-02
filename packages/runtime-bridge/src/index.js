@@ -2,7 +2,7 @@ import { createConnection } from 'node:net'
 import { isAbsolute } from 'node:path'
 
 export const name = 'harndock-runtime-bridge'
-export const inject = ['webServer', 'connection']
+export const inject = ['webServer']
 
 const CONTROL_ENV = {
   endpoint: 'HARNDOCK_CONTROL_ENDPOINT',
@@ -52,12 +52,9 @@ export function readControlConfig(environment = process.env) {
   }
 }
 
-export function createReadyFrame(config, port, authenticatedUrl) {
+export function createReadyFrame(config, port) {
   if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
     throw new Error(`harndock runtime bridge received an invalid Web port: ${String(port)}`)
-  }
-  if (typeof authenticatedUrl !== 'string' || authenticatedUrl === '') {
-    throw new Error('harndock runtime bridge requires an authenticated Web URL')
   }
   return {
     protocolVersion: 1,
@@ -68,7 +65,6 @@ export function createReadyFrame(config, port, authenticatedUrl) {
     profile: 'desktop',
     harnessCommit: config.harnessCommit,
     url: `http://127.0.0.1:${String(port)}/`,
-    authenticatedUrl,
   }
 }
 
@@ -195,10 +191,7 @@ export function apply(ctx) {
           }
         },
       })
-      const connection = ctx.get('connection')
-      if (connection === undefined) throw new Error('harndock runtime bridge requires the Connection service')
-      const authenticatedUrl = connection.authenticatedUrl(`http://127.0.0.1:${String(webServer.port)}`)
-      const frame = createReadyFrame(control, webServer.port, authenticatedUrl)
+      const frame = createReadyFrame(control, webServer.port)
       await sendControlFrame(control.endpoint, frame, current => {
         socket = current
         if (disposed) current.destroy()

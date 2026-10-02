@@ -87,7 +87,6 @@ async function startHarness() {
       '127.0.0.1',
       '--port',
       '0',
-      '--no-open',
     ],
     {
       cwd: testHome,
@@ -103,7 +102,7 @@ async function startHarness() {
   const ready = new Promise((resolveReady, rejectReady) => {
     const inspect = chunk => {
       output += chunk.toString()
-      const match = output.match(/dsh web: (http:\/\/127\.0\.0\.1:\d+\/\?[^\s]+)/)
+      const match = output.match(/dsh web: (http:\/\/127\.0\.0\.1:\d+)/)
       if (match !== null && !settled) {
         settled = true
         resolveReady(match[1])
@@ -139,25 +138,21 @@ async function startHarness() {
 }
 
 function bootManifestOf(html) {
-  const match = html.match(/globalThis\["__DSH_BOOT__"\] = (.+?);?\s*<\/script>/)
+  const match = html.match(/__DSH_BOOT__\s*=\s*(.+?)\s*<\/script>/)
   assert.notEqual(match, null, 'Harness HTML must contain a boot manifest')
-  return JSON.parse(match[1])
+  return JSON.parse(match[1].replace(/;\s*$/, ''))
 }
 
 async function probeWeb(expectedDesktopClient) {
   const runtime = await startHarness()
   try {
-    const login = await fetch(runtime.url, { redirect: 'manual' })
-    assert.ok(login.status === 302 || login.status === 303)
-    const cookie = login.headers.get('set-cookie')?.split(';', 1)[0]
-    assert.ok(cookie)
-    const response = await fetch(new URL('/', runtime.url), { headers: { cookie } })
+    const response = await fetch(runtime.url)
     assert.equal(response.status, 200)
     const boot = bootManifestOf(await response.text())
     const client = boot.entries.find(entry => entry.id === DESKTOP_CLIENT)
     assert.equal(client !== undefined, expectedDesktopClient)
     if (client !== undefined) {
-      const bundle = await fetch(new URL(client.url, runtime.url), { headers: { cookie } })
+      const bundle = await fetch(new URL(client.url, runtime.url))
       assert.equal(bundle.status, 200, 'desktop Client bundle must be served')
       const source = await bundle.text()
       assert.match(source, /@harndock\/client-desktop/)

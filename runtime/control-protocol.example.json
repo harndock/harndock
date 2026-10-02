@@ -5,7 +5,6 @@
   "runtimeVersion": "2026.09.04.1",
   "runtimeApi": 1,
   "profile": "desktop",
-  "harnessCommit": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
-  "url": "http://127.0.0.1:43127/",
-  "authenticatedUrl": "http://127.0.0.1:43127/?token=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  "harnessCommit": "47f943859bef60e4160492346772ded9b24f765a",
+  "url": "http://127.0.0.1:43127/"
 }

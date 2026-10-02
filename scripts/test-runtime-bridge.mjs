@@ -43,7 +43,7 @@ try {
     HARNDOCK_CONTROL_NONCE: '0123456789abcdef'.repeat(4),
     HARNDOCK_RUNTIME_VERSION: '2026.08.17.1',
     HARNDOCK_RUNTIME_API: '1',
-    HARNDOCK_HARNESS_COMMIT: 'cd5ef8148158c3a752a658978873241fdf8e2bbc',
+    HARNDOCK_HARNESS_COMMIT: '47f943859bef60e4160492346772ded9b24f765a',
   })
 
   const frames = []
@@ -84,7 +84,6 @@ try {
   apply({
     get(service) {
       if (service === 'webServer') return webServer
-      if (service === 'connection') return { authenticatedUrl: value => `${value}/?token=${'a'.repeat(43)}` }
       if (service === 'loader') return { await: () => Promise.resolve() }
       return undefined
     },
@@ -94,7 +93,7 @@ try {
   const frame = await receiveFrame()
   const validate = new Ajv2020({ allErrors: true, strict: true }).compile(controlSchema)
   assert.equal(validate(frame), true, JSON.stringify(validate.errors, undefined, 2))
-  assert.deepEqual(frame, createReadyFrame(readControlConfig(), 43_127, `http://127.0.0.1:43127/?token=${'a'.repeat(43)}`))
+  assert.deepEqual(frame, createReadyFrame(readControlConfig(), 43_127))
   assert.throws(() => createReadyFrame(readControlConfig(), 65_536), /invalid Web port/)
   assert.equal(settingsRoute.path, SETTINGS_PATH)
 

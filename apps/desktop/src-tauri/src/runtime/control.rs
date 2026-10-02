@@ -69,7 +69,6 @@ pub(crate) struct ReadyFrame {
     pub(crate) profile: String,
     pub(crate) harness_commit: String,
     pub(crate) url: String,
-    pub(crate) authenticated_url: String,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
@@ -282,21 +281,11 @@ fn validate_frame(body: &[u8], expectation: &ControlExpectation) -> Result<Contr
     }
     let url = Url::parse(&frame.url)
         .map_err(|error| format!("Runtime ready frame URL is invalid: {error}"))?;
-    validate_loopback_url(&url, false, "Runtime ready URL")?;
-    let authenticated_url = Url::parse(&frame.authenticated_url)
-        .map_err(|error| format!("Runtime authenticated URL is invalid: {error}"))?;
-    validate_loopback_url(&authenticated_url, true, "Runtime authenticated URL")?;
-    if authenticated_url.scheme() != url.scheme()
-        || authenticated_url.host_str() != url.host_str()
-        || authenticated_url.port() != url.port()
-        || authenticated_url.path() != url.path()
-    {
-        return Err("Runtime authenticated URL does not match the ready URL".to_string());
-    }
+    validate_loopback_url(&url, "Runtime ready URL")?;
     Ok(ControlEvent::Ready(frame))
 }
 
-fn validate_loopback_url(url: &Url, authenticated: bool, label: &str) -> Result<(), String> {
+fn validate_loopback_url(url: &Url, label: &str) -> Result<(), String> {
     if url.scheme() != "http"
         || url.host_str() != Some("127.0.0.1")
         || url.port().is_none()
@@ -309,24 +298,8 @@ fn validate_loopback_url(url: &Url, authenticated: bool, label: &str) -> Result<
             "{label} must be a loopback HTTP root URL with an explicit port"
         ));
     }
-    if !authenticated {
-        if url.query().is_some() {
-            return Err(format!("{label} must not contain a query"));
-        }
-        return Ok(());
-    }
-    let Some(query) = url.query() else {
-        return Err(format!("{label} must contain a launch token"));
-    };
-    let Some(token) = query.strip_prefix("token=") else {
-        return Err(format!("{label} must contain only a launch token"));
-    };
-    if token.len() != 43
-        || !token
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
-    {
-        return Err(format!("{label} contains an invalid launch token"));
+    if url.query().is_some() || url.fragment().is_some() {
+        return Err(format!("{label} must not contain a query or fragment"));
     }
     Ok(())
 }
@@ -367,17 +340,13 @@ mod tests {
             nonce: "0123456789abcdef".repeat(4),
             runtime_version: "2026.08.17.1".to_string(),
             runtime_api: 1,
-            harness_commit: "cd5ef8148158c3a752a658978873241fdf8e2bbc".to_string(),
+            harness_commit: "47f943859bef60e4160492346772ded9b24f765a".to_string(),
         }
     }
 
     fn frame(url: &str) -> String {
-        let authenticated_url = format!(
-            "{}?token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO12",
-            url.trim_end_matches('/')
-        );
         format!(
-            r#"{{"protocolVersion":1,"event":"ready","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"cd5ef8148158c3a752a658978873241fdf8e2bbc","url":"{url}","authenticatedUrl":"{authenticated_url}"}}
+            r#"{{"protocolVersion":1,"event":"ready","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"47f943859bef60e4160492346772ded9b24f765a","url":"{url}"}}
 "#,
             expectation().nonce
         )
@@ -385,7 +354,7 @@ mod tests {
 
     fn settings_frame() -> String {
         format!(
-            r#"{{"protocolVersion":1,"event":"showSettings","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"cd5ef8148158c3a752a658978873241fdf8e2bbc"}}
+            r#"{{"protocolVersion":1,"event":"showSettings","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"47f943859bef60e4160492346772ded9b24f765a"}}
 "#,
             expectation().nonce
         )
@@ -393,7 +362,7 @@ mod tests {
 
     fn remote_sync_frame(connection_state: &str, heartbeat: &str) -> String {
         format!(
-            r#"{{"protocolVersion":1,"event":"remoteSyncStatus","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"cd5ef8148158c3a752a658978873241fdf8e2bbc","connectionState":"{connection_state}","observedAtMs":1756000001000,"lastHeartbeatAtMs":{heartbeat}}}
+            r#"{{"protocolVersion":1,"event":"remoteSyncStatus","nonce":"{}","runtimeVersion":"2026.08.17.1","runtimeApi":1,"profile":"desktop","harnessCommit":"47f943859bef60e4160492346772ded9b24f765a","connectionState":"{connection_state}","observedAtMs":1756000001000,"lastHeartbeatAtMs":{heartbeat}}}
 "#,
             expectation().nonce
         )
@@ -427,6 +396,13 @@ mod tests {
         assert!(
             validate_frame(
                 frame("http://127.0.0.1:43127/path").as_bytes(),
+                &expectation()
+            )
+            .is_err()
+        );
+        assert!(
+            validate_frame(
+                frame("http://127.0.0.1:43127/?token=not-used").as_bytes(),
                 &expectation()
             )
             .is_err()

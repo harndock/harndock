@@ -29,6 +29,6 @@
 
 ## 当前工程状态
 
-P0 工程基线、P1 开发态 Runtime 托管和 P2 desktop profile 已于 2026-08-17 完成。P3 的 Runtime 契约、可复现 artifact 构建器、独立 verifier、Runtime bridge、Runtime Store、生产启动握手后端、artifact 安装器、Tauri resource 内置和首次启动自动发现已于 2026-08-18 完成第一轮；签名、正式安装包和 packaged app 启动观察 smoke 尚未完成。`harndock` 已初始化为独立 Git 仓库，Harness 以 `vendor/deepseek-harness` Git submodule 引入，并固定在 `cd5ef8148158c3a752a658978873241fdf8e2bbc`（`0.1.2-alpha.1`）。
+P0 工程基线、P1 开发态 Runtime 托管和 P2 desktop profile 已于 2026-08-17 完成。P3 的 Runtime 契约、可复现 artifact 构建器、独立 verifier、Runtime bridge、Runtime Store、生产启动握手后端、artifact 安装器、Tauri resource 内置和首次启动自动发现已于 2026-08-18 完成第一轮；签名、正式安装包和 packaged app 启动观察 smoke 尚未完成。`harndock` 已初始化为独立 Git 仓库，Harness 以 `vendor/deepseek-harness` Git submodule 引入，并固定在 `47f943859bef60e4160492346772ded9b24f765a`（`0.1.0-rc.5`）。
 
 当前桌面工程位于 `apps/desktop`，使用 Tauri 2、React、TypeScript 和 Vite。Bootstrap UI 启动 Rust Runtime Manager；Manager 通过开发适配器准备并托管 Harness `desktop` profile，识别随机回环端口的就绪 URL 后把主 WebView 导航到 Harness Web GUI。`packages/desktop-bundle` 和 `packages/client-desktop` 完全位于上游仓库之外，并通过 Harness profile 与 Client module loader 加载。Runtime 失败或崩溃时，窗口回到带诊断和重试操作的 Bootstrap UI。

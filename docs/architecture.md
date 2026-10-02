@@ -21,7 +21,7 @@ flowchart LR
   Bootstrap["Tauri Bootstrap UI"] --> Manager["Rust Runtime Manager"]
   Manager -->|"spawn / stop / restart"| Adapter["Development Runtime adapter"]
   Adapter --> Runtime["Harness Node Runtime"]
-  Runtime -->|"authenticated ready frame"| Control["Private local control socket"]
+  Runtime -->|"ready frame"| Control["Private local control socket"]
   Control --> Manager
   Runtime -->|"HTTP + WebSocket on 127.0.0.1"| WebView["Harness Web GUI in Tauri WebView"]
   Runtime --> HostPlugins["Host Cordis plugins"]

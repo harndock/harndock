@@ -37,7 +37,7 @@ Runtime 必须内置 Node 和 pnpm。Node 启动构建后的 Harness `lib/bin.js
 pnpm build:runtime
 ```
 
-构建器从 `vendor/deepseek-harness` 的 clean Git commit 导出源码，按 `@deepseek-ai/dsh` 的 workspace 依赖闭包选择 195 个 Harness 包，使用 `runtime/sources.lock.json` 中固定字节的 Node 22.22.3 和 pnpm 11.9.0，完成 Harness build 后通过 `pnpm deploy --prod` 生成独立 app。导出后会对桌面 WebView 的浏览器会话 Cookie 应用一个确定性的 `SameSite=Lax` 兼容补丁，使 token URL 的顶层 303 重定向可以在 WKWebView 中完成会话交换。目标平台过滤掉不适用的 OS/CPU 包；devDependencies、workspace 元数据和构建缓存不会进入 artifact。随后仅复制 `desktop-bundle`、`client-desktop`、`runtime-bridge` 三个产品包及契约、锁文件和许可证。
+构建器从 `vendor/deepseek-harness` 的 clean Git commit 导出源码，按 `@deepseek-ai/dsh` 的 workspace 依赖闭包选择 Harness 包，使用 `runtime/sources.lock.json` 中固定字节的 Node 22.22.3 和 pnpm 11.9.0，完成 Harness build 后通过 `pnpm deploy --prod` 生成独立 app。最新 Harness 使用 loopback 根 URL 建立 Web 会话，不再需要旧版 token URL 或 Cookie `SameSite` 补丁。目标平台过滤掉不适用的 OS/CPU 包；devDependencies、workspace 元数据和构建缓存不会进入 artifact。随后仅复制 `desktop-bundle`、`client-desktop`、`runtime-bridge` 三个产品包及契约、锁文件和许可证。
 
 归档前的固定裁剪规则包括：删除 `app/node_modules/.modules.yaml` 和 `app/node_modules/.pnpm-workspace-state-v1.json`；对 Rolldown 生成的 CSS module string map 按属性名排序并重新生成逗号；拒绝绝对路径、越界符号链接和未支持的文件类型。staging 使用系统临时目录下固定名称 `harndock-runtime-build`，同时运行的构建会被拒绝。目录项按 POSIX 路径排序，归档写入器只写固定 uid/gid、owner、mode、mtime、path/linkpath 和文件内容，不写本机 atime/ctime。
 
@@ -67,6 +67,6 @@ HARNDOCK_RUNTIME_API=1
 HARNDOCK_HARNESS_COMMIT=<40 lowercase hex characters>
 ```
 
-父目录权限必须为 `0700`。bridge 注入 `webServer` 和 `connection`，等待整个 Harness Loader 树成功 settlement，再连接 socket 并发送一条 UTF-8 NDJSON `ready` 帧，格式由 `control-protocol.schema.json` 定义。Shell 每次连接最多读取 8 KiB，验证 nonce、版本、profile、commit、干净的 `http://127.0.0.1:<port>/` URL 和同源一次性认证 URL；Runtime ready 后保持私有 listener，唯一额外动作是 metadata 相同且不带任意参数的 `showSettings` 帧。桌面 Runtime 使用认证 URL 在内嵌 WebView 中建立 Harness Web 会话，不再自动打开系统浏览器。
+父目录权限必须为 `0700`。bridge 注入 `webServer` 和 `connection`，等待整个 Harness Loader 树成功 settlement，再连接 socket 并发送一条 UTF-8 NDJSON `ready` 帧，格式由 `control-protocol.schema.json` 定义。Shell 每次连接最多读取 8 KiB，验证 nonce、版本、profile、commit 和干净的 `http://127.0.0.1:<port>/` URL；Runtime ready 后保持私有 listener，唯一额外动作是 metadata 相同且不带任意参数的 `showSettings` 帧。桌面 Runtime 直接在内嵌 WebView 中打开 loopback 根 URL，不再自动打开系统浏览器。
 
 启动前的超时、EOF、多帧、schema 错误或 metadata 不匹配都属于启动失败。就绪后的无效控制帧只记录脱敏错误，不得中止健康 Runtime；listener 在 Runtime 停止时关闭并删除 socket。Harness 浏览器端不直接获得 nonce 或 Tauri IPC，只能通过 host bridge 注册的同源固定 POST 触发 `showSettings`。开发源码模式继续使用现有 stdout 探测；生产 artifact 不允许回退到人类日志。Windows named pipe 属于后续 manifest/protocol 版本，不在 v1 范围内。

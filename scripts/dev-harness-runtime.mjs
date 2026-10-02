@@ -26,7 +26,6 @@ const child = spawn(
     '127.0.0.1',
     '--port',
     '0',
-    '--no-open',
   ],
   {
     cwd: process.cwd(),

@@ -1588,19 +1588,13 @@ fn navigate_to_runtime(
     generation: u64,
     frame: &ReadyFrame,
 ) -> Result<(), RuntimeFailure> {
-    let public_url = Url::parse(&frame.url).map_err(|error| {
+    let url = Url::parse(&frame.url).map_err(|error| {
         RuntimeFailure::new(
             RuntimeFailureKind::InvalidReadyUrl,
             format!("could not parse the Runtime ready URL: {error}"),
         )
     })?;
-    let authenticated_url = Url::parse(&frame.authenticated_url).map_err(|error| {
-        RuntimeFailure::new(
-            RuntimeFailureKind::InvalidReadyUrl,
-            format!("could not parse the Runtime authenticated URL: {error}"),
-        )
-    })?;
-    navigate_to_urls(&shared, app, generation, &authenticated_url, &public_url)
+    navigate_to_url(&shared, app, generation, &url)
 }
 
 fn navigate_to_url(
@@ -2084,7 +2078,7 @@ mod tests {
                 "runtimeVersion": "2026.08.24.1",
                 "runtimeApi": 1,
                 "profile": "desktop",
-                "harnessCommit": "cd5ef8148158c3a752a658978873241fdf8e2bbc",
+                "harnessCommit": "47f943859bef60e4160492346772ded9b24f765a",
                 "connectionState": state,
                 "observedAtMs": observed_at_ms,
                 "lastHeartbeatAtMs": last_heartbeat_at_ms,
