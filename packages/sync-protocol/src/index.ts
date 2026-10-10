@@ -169,11 +169,58 @@ export interface EventAckFrame extends FrameBase<'event.ack'> {
   }
 }
 
+/** Optional agent metadata carried by session snapshots. */
+export type AgentPresetId = 'harness' | 'codex' | 'claude-code'
+
+export interface NativeSessionRef {
+  schemaVersion: 1
+  agentPreset: AgentPresetId
+  nativeSessionId: string
+  resumeReference: string | null
+}
+
+export interface AgentCapabilityFlags {
+  create: boolean
+  resume: boolean
+  send: boolean
+  stream: boolean
+  cancel: boolean
+  approval: boolean
+  toolEvents: boolean
+  usage: boolean
+  modelSelection: boolean
+  accessMode: boolean
+  childTasks: boolean
+  plugins: boolean
+  mcp: boolean
+  skills: boolean
+  hooks: boolean
+  remotePrompt: boolean
+}
+
+export interface AgentCapabilities {
+  schemaVersion: 1
+  preset: AgentPresetId
+  capabilities: AgentCapabilityFlags
+  disabledReasons: Partial<Record<keyof AgentCapabilityFlags, string>>
+  observedAt: number
+  adapterVersion: string
+  nativeProtocolVersion?: string
+}
+
 export interface SessionSnapshot {
   header: {
+    /** Optional agent contract version for consumers that understand extensions. */
+    schemaVersion?: 1
     title: string
     cwdLabel?: string
+    workspaceId?: string
+    agentPreset?: AgentPresetId
+    nativeRef?: NativeSessionRef
     createdAt: number
+    updatedAt?: number
+    lastSeq?: number
+    status?: SessionStatus
     parentSessionId: string | null
   }
   projection: {
@@ -184,6 +231,7 @@ export interface SessionSnapshot {
       approvalId: string
       toolName: string
     } | null
+    capabilities?: AgentCapabilities
   }
 }
 

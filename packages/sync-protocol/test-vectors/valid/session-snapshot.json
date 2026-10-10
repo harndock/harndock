@@ -1,0 +1,24 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JSNAPSHOT",
+  "kind": "session.snapshot",
+  "accountId": "acct_demo",
+  "deviceId": "dev_pc",
+  "runtimeId": "runtime_mac_01",
+  "sessionId": "session_legacy",
+  "sentAt": "2026-08-18T09:29:59.000Z",
+  "payload": {
+    "header": {
+      "title": "Legacy session",
+      "cwdLabel": "workspace",
+      "createdAt": 1787045399000,
+      "parentSessionId": null
+    },
+    "projection": {
+      "status": "idle",
+      "lastSeq": -1,
+      "lastActivityAt": 1787045399000,
+      "unresolvedApproval": null
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "protocolVersion": 1,
+  "frameId": "frame_01JAGENTSNAP",
+  "kind": "session.snapshot",
+  "accountId": "acct_demo",
+  "deviceId": "dev_pc",
+  "runtimeId": "runtime_mac_01",
+  "sessionId": "session_codex",
+  "sentAt": "2026-10-02T09:30:00.000Z",
+  "payload": {
+    "header": {
+      "schemaVersion": 1,
+      "title": "Codex implementation",
+      "cwdLabel": "dsh-gui",
+      "workspaceId": "workspace_dsh",
+      "agentPreset": "codex",
+      "nativeRef": {
+        "schemaVersion": 1,
+        "agentPreset": "codex",
+        "nativeSessionId": "thread_codex_01",
+        "resumeReference": "ref:codex/thread_codex_01"
+      },
+      "createdAt": 1790933400000,
+      "updatedAt": 1790933460000,
+      "lastSeq": 7,
+      "status": "running",
+      "parentSessionId": null
+    },
+    "projection": {
+      "status": "running",
+      "lastSeq": 7,
+      "lastActivityAt": 1790933460000,
+      "unresolvedApproval": null,
+      "capabilities": {
+        "schemaVersion": 1,
+        "preset": "codex",
+        "capabilities": {
+          "create": true,
+          "resume": true,
+          "send": true,
+          "stream": true,
+          "cancel": true,
+          "approval": true,
+          "toolEvents": true,
+          "usage": true,
+          "modelSelection": true,
+          "accessMode": true,
+          "childTasks": true,
+          "plugins": true,
+          "mcp": true,
+          "skills": true,
+          "hooks": false,
+          "remotePrompt": false
+        },
+        "disabledReasons": {
+          "hooks": "Codex hooks are not exposed by the selected app-server profile",
+          "remotePrompt": "Remote prompt is disabled for this device"
+        },
+        "observedAt": 1790933460000,
+        "adapterVersion": "codex-adapter-0.1.0",
+        "nativeProtocolVersion": "app-server-v2"
+      }
+    }
+  }
+}

@@ -14,6 +14,8 @@ const validVectors = [
   ['pc-challenge.json', 'pc.challenge'],
   ['event-ack.json', 'event.ack'],
   ['session-event.json', 'session.event'],
+  ['session-snapshot.json', 'session.snapshot'],
+  ['agent-session-snapshot.json', 'session.snapshot'],
   ['command-submit.json', 'command.submit'],
   ['client-hello.json', 'client.hello'],
 ]
@@ -34,5 +36,9 @@ for (const name of invalidVectors) {
 
 const unknownEvent = await vector('valid', 'session-event.json')
 assert.equal(parseProtocolFrame(unknownEvent).payload.event.futureMetadata, 'must survive')
+
+const extendedSnapshot = await vector('valid', 'agent-session-snapshot.json')
+assert.equal(parseProtocolFrame(extendedSnapshot).payload.header.nativeRef.resumeReference, 'ref:codex/thread_codex_01')
+assert.equal(parseProtocolFrame(extendedSnapshot).payload.projection.capabilities.preset, 'codex')
 
 console.log(`Protocol vectors verified: ${validVectors.length} valid, ${invalidVectors.length} invalid`)

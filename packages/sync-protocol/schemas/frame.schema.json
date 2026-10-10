@@ -46,6 +46,93 @@
     "platform": {
       "enum": ["ios", "android", "web", "macos", "windows", "linux"]
     },
+    "agentPresetId": {
+      "enum": ["harness", "codex", "claude-code"]
+    },
+    "agentSessionStatus": {
+      "enum": ["idle", "running", "waiting", "completed", "failed", "cancelled", "offline"]
+    },
+    "agentSchemaVersion": {
+      "const": 1
+    },
+    "nativeSessionRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "agentPreset", "nativeSessionId", "resumeReference"],
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/agentSchemaVersion" },
+        "agentPreset": { "$ref": "#/$defs/agentPresetId" },
+        "nativeSessionId": { "$ref": "#/$defs/id" },
+        "resumeReference": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^ref:[A-Za-z0-9][A-Za-z0-9_.:/-]{0,255}$" }
+          ]
+        }
+      }
+    },
+    "agentCapabilityFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "create", "resume", "send", "stream", "cancel", "approval", "toolEvents", "usage",
+        "modelSelection", "accessMode", "childTasks", "plugins", "mcp", "skills", "hooks", "remotePrompt"
+      ],
+      "properties": {
+        "create": { "type": "boolean" },
+        "resume": { "type": "boolean" },
+        "send": { "type": "boolean" },
+        "stream": { "type": "boolean" },
+        "cancel": { "type": "boolean" },
+        "approval": { "type": "boolean" },
+        "toolEvents": { "type": "boolean" },
+        "usage": { "type": "boolean" },
+        "modelSelection": { "type": "boolean" },
+        "accessMode": { "type": "boolean" },
+        "childTasks": { "type": "boolean" },
+        "plugins": { "type": "boolean" },
+        "mcp": { "type": "boolean" },
+        "skills": { "type": "boolean" },
+        "hooks": { "type": "boolean" },
+        "remotePrompt": { "type": "boolean" }
+      }
+    },
+    "agentDisabledReasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "resume": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "send": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "stream": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "cancel": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "approval": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "toolEvents": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "usage": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "modelSelection": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "accessMode": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "childTasks": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "plugins": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "mcp": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "skills": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "hooks": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "remotePrompt": { "type": "string", "minLength": 1, "maxLength": 1024 }
+      }
+    },
+    "agentCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "preset", "capabilities", "disabledReasons", "observedAt", "adapterVersion"],
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/agentSchemaVersion" },
+        "preset": { "$ref": "#/$defs/agentPresetId" },
+        "capabilities": { "$ref": "#/$defs/agentCapabilityFlags" },
+        "disabledReasons": { "$ref": "#/$defs/agentDisabledReasons" },
+        "observedAt": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "adapterVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "nativeProtocolVersion": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
     "baseProperties": {
       "protocolVersion": { "const": 1 },
       "frameId": { "$ref": "#/$defs/id" },
@@ -287,9 +374,16 @@
               "additionalProperties": false,
               "required": ["title", "createdAt", "parentSessionId"],
               "properties": {
+                "schemaVersion": { "$ref": "#/$defs/agentSchemaVersion" },
                 "title": { "type": "string", "maxLength": 4096 },
                 "cwdLabel": { "type": "string", "maxLength": 256 },
+                "workspaceId": { "$ref": "#/$defs/id" },
+                "agentPreset": { "$ref": "#/$defs/agentPresetId" },
+                "nativeRef": { "$ref": "#/$defs/nativeSessionRef" },
                 "createdAt": { "type": "integer", "minimum": 0 },
+                "updatedAt": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+                "lastSeq": { "type": "integer", "minimum": -1, "maximum": 9007199254740991 },
+                "status": { "$ref": "#/$defs/agentSessionStatus" },
                 "parentSessionId": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] }
               }
             },
@@ -314,7 +408,8 @@
                     },
                     { "type": "null" }
                   ]
-                }
+                },
+                "capabilities": { "$ref": "#/$defs/agentCapabilities" }
               }
             }
           }
